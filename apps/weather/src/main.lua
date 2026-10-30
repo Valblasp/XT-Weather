@@ -8,7 +8,7 @@ local X = require('wx')
 local STALE_S = 30 * 60
 local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.0'
+local APP_VERSION = '1.3.1'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
@@ -178,8 +178,10 @@ local function deg(v) return v and (tostring(v) .. '°') or '-' end
 
 local function draw_main_portrait(gg)
   local W = L.w
-  gg:text(16, 12, kit.short(fc.place, 24), { font = kit.font('large') })
-  gg:text(16, 50, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
+  local place_str = kit.short(fc.place, 24)
+  gg:text(16,  8, place_str, { font = kit.font('large') })
+  gg:text(17,  8, place_str, { font = kit.font('large') })   -- double-draw for bold/heavier weight
+  gg:text(16, 48, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
   gg:line(0, 80, W, 80)
   -- now: a big temperature, the icon and the details
   local kind, text = X.kind(fc.now_code)
@@ -217,7 +219,9 @@ end
 local function draw_main_landscape(gg)
   local W = L.w
   -- Top header bar (y: 0..42)
-  gg:text(16, 10, kit.short(fc.place, 26), { font = kit.font('large') })
+  local place_str_land = kit.short(fc.place, 26)
+  gg:text(16, 10, place_str_land, { font = kit.font('large') })
+  gg:text(17, 10, place_str_land, { font = kit.font('large') })  -- double-draw for bold/heavier weight
   gg:text(360, 14, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
   gg:text(W - 130, 12, 'XT Weather', { font = kit.font('medium') })
   gg:line(0, 42, W, 42)
