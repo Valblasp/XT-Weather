@@ -21,6 +21,18 @@ Inspired by the minimalist Material You design of **Google Weather**, specifical
 - **Unit Toggle**: One-tap toggle between Celsius (`°C`) and Fahrenheit (`°F`).
 - **Instant Launch**: Caches your last forecast locally for instantaneous loading upon opening.
 
+🌤️ XT Weather v1.2.0 — Release Notes & Changelog
+🚀 What's New in v1.2.0
+🔄 Auto-Update on Launch
+Instant Weather Fetch: The app now automatically connects to Wi-Fi and fetches the freshest weather forecast each time you launch it. No need to manually tap "Refresh" when opening the app.
+Battery Friendly: Wi-Fi is still automatically shut down immediately after fetching the data.
+🏠 Hardware Home & Back Button Exit
+Central Home Pad Exit: Pressing the central Home pad / Menu button now exits the app cleanly back to the system launcher/reader menu.
+Back Key Exit: Pressing Back on the main screen also exits the application directly, matching native device navigation behavior.
+📐 Native Landscape & Portrait Modes
+Portrait Edition (xtweather.xtapp - 480×800): Clean vertical layout optimized for handheld reading.
+Landscape Edition (xtweatherland.xtapp - 800×480): Dual-pane layout perfect for desk stands, nightstands, and dock stations (shows 8 continuous hourly forecast slots and side-by-side 4-day forecast).
+Both editions can be installed simultaneously on your device.
 ---
 
 ## 📥 Installation
