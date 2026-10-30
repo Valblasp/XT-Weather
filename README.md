@@ -14,7 +14,7 @@ Inspired by the minimalist Material You design of **Google Weather**, specifical
 
 ## 🚀 What's New in v1.3.0
 
-- 🔄 **OTA Auto-Updates Direct from GitHub**: The app checks for new updates on launch. When you publish a new build to GitHub, an **`[Update]`** button automatically appears on screen to download the new `.xtapp` directly over Wi-Fi without needing a PC.
+- 🔄 **OTA Auto-Updates Direct from GitHub**: The app checks for new updates on launch. An **`[Update]`** button automatically appears on screen to download the new `.xtapp` directly over Wi-Fi without needing a PC.
 - ⚡ **Auto-Refresh on Launch**: Connects to Wi-Fi immediately upon launch to pull real-time weather from Open-Meteo without having to manually tap "Refresh". Wi-Fi turns off right after syncing to conserve battery.
 - 🏠 **Clean Hardware Exit**: Pressing the central **Home pad** or the **Back key** cleanly closes the app back to the system launcher/reader menu.
 - 📐 **Native Landscape & Portrait Modes**: Available in both **Portrait (Vertical - 480×800)** and **Landscape (Horizontal - 800×480)**. Both editions can be installed and used simultaneously on your device!
