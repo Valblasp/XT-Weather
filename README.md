@@ -24,7 +24,9 @@ Inspired by the minimalist Material You design of **Google Weather**, specifical
 
 ---
 
-## 🚀 What's New in v1.3.0
+## 🚀 What's New in v1.3.1
+
+OTA UPdate Test
 
 ### 🔁 OTA Auto-Updates from GitHub
 When a new version is published to this repository, the app detects it automatically on launch and displays an **`[Update]`** button. Tapping it downloads and installs the new `.xtapp` directly over Wi-Fi — no PC or USB cable required.
