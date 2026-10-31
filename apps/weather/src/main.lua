@@ -8,7 +8,7 @@ local X = require('wx')
 local STALE_S = 30 * 60
 local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.4'
+local APP_VERSION = '1.3.5'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
@@ -123,8 +123,9 @@ local function download_update()
   if not update_info or not update_info.url then return end
   local target_url = update_info.url
   local fname = update_info.filename
+  local ver   = update_info.version
   busy_label = 'Downloading update...'
-  status = 'Downloading v' .. update_info.version .. '...'
+  status = 'Downloading v' .. ver .. '...'
   kit.refresh()
 
   get(target_url, 'Downloading update...', function(d, err, raw_body)
@@ -132,18 +133,54 @@ local function download_update()
       status = 'Download failed: ' .. tostring(err or 'empty')
       return
     end
-    local okw = pcall(function()
-      if ctx.files and ctx.files.write then
-        ctx.files:write(fname, raw_body)
-      else
-        kit.write(fname, raw_body)
+
+    -- Try saving to SD card root, then fall back to app storage
+    local saved_path = nil
+    local candidates = {
+      '/sdcard/'             .. fname,
+      '/mnt/sdcard/'         .. fname,
+      '/storage/emulated/0/' .. fname,
+      fname
+    }
+    for _, path in ipairs(candidates) do
+      local ok = pcall(function()
+        if ctx.files and ctx.files.write then
+          ctx.files:write(path, raw_body)
+        else
+          kit.write(path, raw_body)
+        end
+      end)
+      if ok then saved_path = path; break end
+    end
+
+    update_info = nil
+
+    if not saved_path then
+      status = 'Could not save file.'
+      return
+    end
+
+    -- Try to trigger the system installer automatically
+    local launched = false
+    pcall(function()
+      if ctx.system and ctx.system.install then
+        ctx.system:install(saved_path); launched = true
+      elseif ctx.system and ctx.system.open then
+        ctx.system:open(saved_path);    launched = true
+      elseif ctx.shell and ctx.shell.open then
+        ctx.shell:open(saved_path);     launched = true
       end
     end)
-    if okw then
-      status = 'Saved ' .. fname .. '! Open All Files to install.'
-      update_info = nil
+
+    if launched then
+      status = 'Installing v' .. ver .. '...'
     else
-      status = 'Could not save file.'
+      kit.show({
+        title = 'Update downloaded!',
+        lines = { 'File saved: ' .. fname,
+                  'Open App Files, tap xtweather.xtapp and choose Install.' },
+        rows = { { { 'OK', kit.close } } }
+      })
     end
   end)
 end
