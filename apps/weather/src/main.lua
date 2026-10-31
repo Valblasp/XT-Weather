@@ -8,7 +8,7 @@ local X = require('wx')
 local STALE_S = 30 * 60
 local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.2'
+local APP_VERSION = '1.3.3'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
@@ -178,39 +178,41 @@ local function deg(v) return v and (tostring(v) .. '°') or '-' end
 
 local function draw_main_portrait(gg)
   local W = L.w
-  local place_str = kit.short(fc.place, 24)
-  gg:text(16,  8, place_str, { font = kit.font('large') })
-  gg:text(17,  8, place_str, { font = kit.font('large') })   -- double-draw for bold/heavier weight
-  gg:text(16, 48, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
-  gg:line(0, 80, W, 80)
+  -- header: city name (left) + updated time (right) on the same line
+  local place_str = kit.short(fc.place, 22)
+  local upd_str = 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and ' (old)' or '')
+  gg:text(16, 10, place_str, { font = kit.font('large') })
+  gg:text(17, 10, place_str, { font = kit.font('large') })
+  gg:text(W - kit.width(kit.font('small'), upd_str) - 12, 17, upd_str, { font = kit.font('small') })
+  gg:line(0, 44, W, 44)
   -- now: a big temperature, the icon and the details
   local kind, text = X.kind(fc.now_code)
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local x = X.big_number(gg, temp, 24, 104, 96)
-  gg:text(x + 2, 100, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, W - 140, 92, 120)
-  gg:text(24, 212, text, { font = kit.font('large') })
-  gg:text(24, 250, 'feels ' .. deg(fc.now_feel) .. '   humidity ' .. (fc.now_hum or '-') .. '%   wind ' .. (fc.now_wind or '-') .. ' km/h',
+  local x = X.big_number(gg, temp, 24, 68, 96)
+  gg:text(x + 2, 64, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 140, 56, 120)
+  gg:text(24, 176, text, { font = kit.font('large') })
+  gg:text(24, 214, 'feels ' .. deg(fc.now_feel) .. '   humidity ' .. (fc.now_hum or '-') .. '%   wind ' .. (fc.now_wind or '-') .. ' km/h',
           { font = kit.font('small') })
-  gg:line(0, 282, W, 282)
+  gg:line(0, 246, W, 246)
   -- the next 12 hours, every second hour
   local col = W // 6
   for k = 1, 6 do
     local h = fc.hours[(k - 1) * 2 + 1]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 10, 292, h.time, { font = kit.font('small') })
-      X.icon(gg, (X.kind(h.code)), cx + 14, 316, 48)
-      gg:text(cx + 14, 370, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 14, 398, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 10, 256, h.time, { font = kit.font('small') })
+      X.icon(gg, (X.kind(h.code)), cx + 14, 280, 48)
+      gg:text(cx + 14, 334, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 14, 362, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-  gg:line(0, 428, W, 428)
+  gg:line(0, 392, W, 392)
   -- the days (up to 5)
   local DAY_H = 54
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
-    local y = 440 + (k - 1) * DAY_H
+    local y = 404 + (k - 1) * DAY_H
     gg:text(16, y + 13, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
     X.icon(gg, (X.kind(d.code)), 110, y + 3, 48)
     gg:text(180, y + 13, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
