@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.3.2-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.3.5-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
@@ -19,19 +19,25 @@ Inspired by the minimalist Material You design of **Google Weather**, specifical
 - **5-Day Outlook**: Daily low / high temperature ranges and precipitation probabilities (portrait mode).
 - **Standalone Wi-Fi**: Fetches live weather data and geocoding directly via the **Open-Meteo API** (free, no account or API keys required). Disables Wi-Fi immediately after syncing to preserve battery life.
 - **Global Place Search**: Search any city, town, or location worldwide using the built-in firmware keyboard.
-- **Unit Toggle**: One-tap toggle between Celsius (`°C`) and Fahrenheit (`°F`) from the Options menu.
+- **Unit Toggle**: One-tap toggle between Celsius (`°C`) and Fahrenheit (`°F`) via the Options menu.
 - **Instant Launch**: Caches your last forecast locally for instantaneous loading upon opening.
-- **OTA Auto-Updates**: Detects and installs new versions directly over Wi-Fi, no PC required.
+- **OTA Auto-Updates**: Detects and downloads new versions directly over Wi-Fi — no PC or USB cable required.
 
 ---
 
-## 🚀 What's New in v1.3.2
+## 🚀 What's New in v1.3.5
+
+### 📲 OTA Updates — Fully Working
+Tap the **`[Update]`** button when a new version is detected. The `.xtapp` file downloads automatically to App Files. A prompt then guides you to install it — no PC needed.
 
 ### ⚙️ Options Menu
-Place, unit toggle, app version, and update check are now grouped in a single **Options** button. The main screen is cleaner with just **Refresh** and **Options**.
+Place, unit toggle, app version, and update check are now grouped under a single **Options** button. The main screen stays clean with just **Refresh** and **Options**.
 
-### 📅 5-Day Forecast (Portrait)
-Portrait mode now shows **5 days** of daily forecast instead of 4, making better use of the available screen space.
+### 📅 5-Day Forecast
+Portrait mode now shows **5 days** of daily forecast. The API was previously capped at 4 days — now fetches 7.
+
+### 🗓️ Compact Header
+The *updated HH:MM* timestamp now shares the same line as the city name (right-aligned), freeing up a full row of screen space for forecast content.
 
 ---
 
@@ -39,10 +45,11 @@ Portrait mode now shows **5 days** of daily forecast instead of 4, making better
 
 | Version | Highlights |
 |---|---|
-| **v1.3.2** | Options menu, 5-day forecast in portrait |
-| v1.3.1.1 | Housekeeping: .gitignore, removed pycache |
+| **v1.3.5** | OTA download to App Files with guided install prompt |
+| v1.3.4 | Compact header (city + updated time on one line), 5-day forecast fixed |
+| v1.3.2 | Options menu (Place, °C/°F, version, Check Updates) |
 | v1.3.1 | City name displayed bolder |
-| v1.3.0 | OTA auto-updates, auto-refresh on launch, hardware Home/Back exit, portrait & landscape modes |
+| v1.3.0 | OTA update system, auto-refresh on launch, hardware Home/Back exit, portrait & landscape modes |
 
 ---
 
@@ -51,8 +58,8 @@ Portrait mode now shows **5 days** of daily forecast instead of 4, making better
 ### 1. Download
 Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weather/releases/latest) section:
 
-- 👉 **[xtweather.xtapp](https://github.com/Valblasp/XT-Weather/releases/latest)** — Portrait edition *(~35 KB)*
-- 👉 **[xtweatherland.xtapp](https://github.com/Valblasp/XT-Weather/releases/latest)** — Landscape edition *(~35 KB)*
+- 👉 **[xtweather.xtapp](https://github.com/Valblasp/XT-Weather/releases/latest)** — Portrait edition *(~36 KB)*
+- 👉 **[xtweatherland.xtapp](https://github.com/Valblasp/XT-Weather/releases/latest)** — Landscape edition *(~36 KB)*
 
 ### 2. Transfer to Device
 1. Connect your **Xteink X4 Pro** to your computer via USB.
@@ -80,7 +87,7 @@ Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weath
   - **Check Updates** — Manually check for a new version on GitHub.
   - **Close** — Dismiss the menu.
 - **Exit**: Press the central **Home pad** or the **Back key** to return to the reader menu.
-- **Update**: When an update is detected, tap the **Update** button that appears in the toolbar to install it wirelessly.
+- **Update**: When a new version is detected, tap the **`[Update]`** button in the toolbar, then follow the on-screen instructions to install from App Files.
 
 ---
 
@@ -89,7 +96,7 @@ Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weath
 - **Runtime**: Native Lua mini-app host built into XTOS Licorice (API 2.0+).
 - **Resolution**: Native 480 × 800 px and 800 × 480 px monochrome rasterization with e-ink refresh optimizations.
 - **Weather API**: Powered by [Open-Meteo.com](https://open-meteo.com) (licensed under CC BY 4.0).
-- **OTA Updates**: Version check via `version.json` hosted on GitHub.
+- **OTA Updates**: Version check via `version.json` hosted on GitHub. File downloads to device App Files storage.
 
 ---
 
