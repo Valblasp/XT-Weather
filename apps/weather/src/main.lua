@@ -8,7 +8,7 @@ local X = require('wx')
 local STALE_S = 30 * 60
 local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.3'
+local APP_VERSION = '1.3.4'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
