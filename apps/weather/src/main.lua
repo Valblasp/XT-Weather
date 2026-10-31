@@ -8,7 +8,7 @@ local X = require('wx')
 local STALE_S = 30 * 60
 local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.1.1'
+local APP_VERSION = '1.3.2'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
@@ -27,8 +27,8 @@ local function layout(gg)
     end
   end
   local is_land = (w > h)
-  local btn_h = is_land and 50 or 64
-  local btn_y = h - btn_h - 14
+  local btn_h = is_land and 44 or 48
+  local btn_y = h - btn_h - 8
   return { w = w, h = h, is_land = is_land, btn_y = btn_y, btn_h = btn_h }
 end
 
@@ -206,13 +206,16 @@ local function draw_main_portrait(gg)
     end
   end
   gg:line(0, 428, W, 428)
-  -- the days
+  -- the days (up to 5)
+  local DAY_H = 54
   for k, d in ipairs(fc.days) do
-    local y = 440 + (k - 1) * 62
-    gg:text(16, y + 16, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, (X.kind(d.code)), 110, y + 4, 52)
-    gg:text(180, y + 16, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-    gg:text(340, y + 18, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    if k > 5 then break end
+    local y = 440 + (k - 1) * DAY_H
+    gg:text(16, y + 13, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+    X.icon(gg, (X.kind(d.code)), 110, y + 3, 48)
+    gg:text(180, y + 13, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    gg:text(340, y + 15, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    if k < 5 then gg:line(0, y + DAY_H, W, y + DAY_H) end
   end
 end
 
@@ -316,12 +319,33 @@ local function draw_places(gg)
   end
 end
 
+local function open_options()
+  kit.show({
+    title = 'XT Weather  v' .. APP_VERSION,
+    lines = {},
+    rows = {
+      { { 'Place', function() kit.close(); ask_place() end } },
+      { { 'Switch to \xC2\xB0' .. (cfg.unit == 'C' and 'F' or 'C'),
+          function()
+            cfg.unit = cfg.unit == 'C' and 'F' or 'C'
+            save_cfg(); kit.close(); refresh_forecast()
+          end } },
+      { { 'Check Updates',
+          function()
+            kit.close()
+            status = 'Checking for updates...'
+            check_update()
+          end } },
+      { { 'Close', kit.close } }
+    },
+    cancel = kit.close
+  })
+end
+
 local function buttons()
   if screen == 'places' then return { 'Back', 'Search again' } end
-  if update_info then
-    return { 'Update', 'Refresh', 'Place', '°' .. (cfg.unit == 'C' and 'F' or 'C') }
-  end
-  return { 'Refresh', 'Place', '°' .. (cfg.unit == 'C' and 'F' or 'C') }
+  if update_info then return { 'Update', 'Refresh', 'Options' } end
+  return { 'Refresh', 'Options' }
 end
 local function button_rect(k, n)
   local bw = math.floor((L.w - 24 - (n - 1) * 8) / n)
@@ -360,12 +384,9 @@ local function tap(x, y)
       status = nil
       if b == 'Update' then download_update()
       elseif b == 'Refresh' then refresh_forecast(); check_update()
-      elseif b == 'Place' or b == 'Search again' then ask_place()
+      elseif b == 'Options' then open_options()
+      elseif b == 'Search again' then ask_place()
       elseif b == 'Back' then screen = 'main'
-      else
-        cfg.unit = cfg.unit == 'C' and 'F' or 'C'
-        save_cfg()
-        refresh_forecast()
       end
       return
     end
