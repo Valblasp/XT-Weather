@@ -1,6 +1,6 @@
 {
-  "version": "1.4.1",
-  "notes": "Redesign: Liquid Glass style refresh with new app icon. Own implementation.",
+  "version": "1.4.2",
+  "notes": "Menu button, download-only updates and an automatic update check after each forecast refresh.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweatherland.xtapp",

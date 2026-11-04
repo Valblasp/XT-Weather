@@ -3,12 +3,12 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.4.1-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.4.2-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
 
-Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale and a floating glass toolbar — everything re-implemented from scratch in our own code.
+Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale and a floating glass toolbar — everything re-implemented from scratch in our own code. **v1.4.2** adds a cleaner **Menu** and a safer update flow.
 
 ---
 
@@ -25,7 +25,21 @@ Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfa
 
 ---
 
-## 🚀 What's New in v1.4.1
+## 🚀 What's New in v1.4.2
+
+### 🧭 Menu Button
+
+- The settings entry is now a **Menu** button on the floating glass bar.
+- Inside: **Place**, **unit switch** (`°C` / `°F`), **Check updates**, app version and **Close**.
+
+### 📲 Download-Only Updates
+
+- The app **never installs automatically**: it downloads the `.xtapp` file to **App Files** and shows an on-screen prompt explaining where to install it.
+- When an update is detected you choose **Download** or **Later**.
+
+### 🔄 Automatic Update Check
+
+- After every weather refresh, the app also checks for a new version — no need to open the menu.
 
 ### 🍏 Liquid Glass Redesign & New Icon
 
@@ -39,10 +53,11 @@ Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfa
 
 | Version | Highlights |
 |---|---|
-| **v1.4.1** | Liquid Glass redesign + new icon; fresh implementation |
+| **v1.4.2** | Menu button; download-only updates with prompt; auto update check after refresh |
+| v1.4.1 | Liquid Glass redesign + new icon; fresh implementation |
 | v1.3.5 | OTA download to App Files with guided install prompt |
 | v1.3.4 | Compact header (city + updated time on one line), 5-day forecast fixed |
-| v1.3.2 | Options menu (Place, °C/°F, version, Check Updates) |
+| v1.3.2 | Menu (Place, °C/°F, version, Check Updates) |
 | v1.3.1 | City name displayed bolder |
 | v1.3.0 | OTA update system, auto-refresh on launch, hardware Home/Back exit, portrait & landscape modes |
 
@@ -75,11 +90,14 @@ Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weath
 
 ## 🧭 How to Use
 
-- **Refresh**: Tap **Refresh** to reconnect to Wi-Fi and fetch the latest forecast.
-- **Place**: Tap **Place** to search for any city or town worldwide.
-- **Switch to °C / °F**: Toggle temperature units instantly.
+- **Refresh**: Tap **Refresh** to reconnect to Wi-Fi and fetch the latest forecast. It also checks for a new app version.
+- **Menu**: Tap **Menu** to open the settings sheet:
+  - **Place** — Search for any city or town worldwide.
+  - **Switch to °C / °F** — Toggle temperature units.
+  - **Check updates** — Look for a new version manually.
+  - **Close** — Dismiss the menu.
 - **Exit**: Press the central **Home pad** or the **Back key** to return to the reader menu.
-- **Update**: When a new version is detected, tap the **`[Update]`** button in the toolbar, then follow the on-screen instructions to install from App Files.
+- **Update**: When a new version is detected, choose **Download**. The file is saved to **App Files** (never installed automatically), and a prompt tells you to open **All Files**, tap the `.xtapp` and choose **Install**.
 
 ---
 

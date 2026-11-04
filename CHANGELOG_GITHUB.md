@@ -1,3 +1,20 @@
+# 🌤️ XT Weather v1.4.2 — Release Notes & Changelog
+
+## 🚀 What's New in v1.4.2
+
+### 🧭 Menu Button
+- The settings entry is now a **Menu** button on the floating glass bar (previously labeled *Options*).
+- Inside: **Place**, unit switch (°C / °F), **Check updates**, app version and **Close**.
+
+### 📲 Download-Only Updates
+- The app **never installs automatically**: it downloads the `.xtapp` file to **App Files** and shows an on-screen prompt with the install steps.
+- When an update is detected you choose **Download** or **Later**.
+
+### 🔄 Automatic Update Check
+- After every weather refresh the app also checks for a new version.
+
+---
+
 # 🌤️ XT Weather v1.4.0 — Release Notes & Changelog
 
 ## 🚀 What's New in v1.4.0

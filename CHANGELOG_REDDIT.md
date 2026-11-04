@@ -1,3 +1,15 @@
+# [RELEASE] XT Weather v1.4.2 for Xteink X4 Pro: Menu + safer updates
+
+Hey everyone! 👋
+
+Quick follow-up to the Liquid Glass redesign:
+
+- **🧭 Menu button**: the settings entry is now **Menu** (previously *Options*). Inside: Place, °C/°F, Check updates, version and Close.
+- **📲 Download-only updates**: the app saves the `.xtapp` to **App Files** and shows a prompt telling you where to install it — it never tries to install on its own.
+- **🔄 Auto update check**: after every weather refresh, the app also looks for a new version.
+
+---
+
 # [RELEASE] XT Weather v1.4.0 for Xteink X4 Pro: Liquid Glass redesign in our own code!
 
 Hey everyone! 👋

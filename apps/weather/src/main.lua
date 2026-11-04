@@ -7,9 +7,9 @@
 
 local X = require('wx')
 local STALE_S = 30 * 60
-local UA = 'XT Weather/1.4.1 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.4.2 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.4.1'
+local APP_VERSION = '1.4.2'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
@@ -93,6 +93,45 @@ local function get(url, label, on_done)
   if not ok then pending, busy_label, status = nil, nil, 'Could not ask: ' .. kit.short(tostring(err), 30) end
 end
 
+local download_update  -- defined below; used by the update prompt
+
+local function check_update(announce)
+  get(UPDATE_URL, 'Checking update...', function(d, err, raw)
+    if not d or type(d) ~= 'table' then
+      if announce then status = 'Update check failed: ' .. tostring(err or 'no answer') end
+      return
+    end
+    local remote_ver = tostring(d.version or '')
+    if remote_ver ~= '' and remote_ver ~= APP_VERSION then
+      local is_land = L and L.is_land
+      local file_url = is_land and d.download_url_land or d.download_url
+      local file_name = is_land and (d.filename_land or 'xtweatherland.xtapp') or (d.filename or 'xtweather.xtapp')
+      local known = update_info ~= nil and update_info.version == remote_ver
+      update_info = {
+        version = remote_ver,
+        url = file_url,
+        filename = file_name,
+        notes = tostring(d.notes or '')
+      }
+      status = 'New update v' .. remote_ver .. '! Tap Update'
+      if not known then
+        kit.show({
+          title = 'Update v' .. remote_ver .. ' available',
+          lines = { 'Download it now? The file is saved to App Files.', 'It is not installed automatically.' },
+          cancel = function() kit.close() end,
+          rows = {
+            { { 'Download', function() kit.close(); download_update() end, true } },
+            { { 'Later', function() kit.close() end, true } }
+          }
+        })
+      end
+    else
+      update_info = nil
+      if announce then status = 'Up to date (v' .. APP_VERSION .. ')' end
+    end
+  end)
+end
+
 local function refresh_forecast()
   if not cfg.lat then status = 'Choose a place first.'; return end
   get(X.forecast_url(cfg.lat, cfg.lon, cfg.unit), 'Getting the forecast...', function(d, err)
@@ -101,29 +140,11 @@ local function refresh_forecast()
     kit.write('forecast.txt', text)
     fc = X.parse_cache(text)
     status = nil
+    check_update()   -- after a fresh forecast, also look for a new app version
   end)
 end
 
-local function check_update()
-  get(UPDATE_URL, 'Checking update...', function(d, err, raw)
-    if not d or type(d) ~= 'table' then return end
-    local remote_ver = tostring(d.version or '')
-    if remote_ver ~= '' and remote_ver ~= APP_VERSION then
-      local is_land = L and L.is_land
-      local file_url = is_land and d.download_url_land or d.download_url
-      local file_name = is_land and (d.filename_land or 'xtweatherland.xtapp') or (d.filename or 'xtweather.xtapp')
-      update_info = {
-        version = remote_ver,
-        url = file_url,
-        filename = file_name,
-        notes = tostring(d.notes or '')
-      }
-      status = 'New update v' .. remote_ver .. '! Tap Update'
-    end
-  end)
-end
-
-local function download_update()
+download_update = function()
   if not update_info or not update_info.url then return end
   local target_url = update_info.url
   local fname = update_info.filename
@@ -147,11 +168,11 @@ local function download_update()
       busy_label = nil
       status = nil
       kit.show({
-        title = 'Update Ready',
-        lines = { fname .. ' saved to App Files.', 'Open All Files, tap the file, then Install.' },
+        title = 'Update downloaded',
+        lines = { fname .. ' saved to App Files.', 'Open All Files, tap it, then Install.' },
+        cancel = function() kit.close() end,
         rows = { { { 'OK', function() kit.close() end, true } } }
       })
-      update_info = nil
     else
       status = 'Could not save file.'
     end
@@ -180,6 +201,26 @@ local function ask_place()
     if s and s:match('%S') then find_place(s) end
     kit.refresh()
   end)
+end
+
+local function open_menu()
+  local unit_label = cfg.unit == 'C' and 'Switch to °F' or 'Switch to °C'
+  kit.show({
+    title = 'Menu',
+    lines = { 'Place: ' .. (cfg.name or 'not set'), 'Version ' .. APP_VERSION },
+    cancel = function() kit.close() end,
+    rows = {
+      { { 'Place', function() kit.close(); ask_place() end, true } },
+      { { unit_label, function()
+          kit.close()
+          cfg.unit = cfg.unit == 'C' and 'F' or 'C'
+          save_cfg()
+          refresh_forecast()
+        end, true } },
+      { { 'Check updates', function() kit.close(); check_update(true) end, true } },
+      { { 'Close', function() kit.close() end, true } }
+    }
+  })
 end
 
 ------------------------------------------------------------------ drawing
@@ -322,10 +363,8 @@ end
 
 local function buttons()
   if screen == 'places' then return { 'Back', 'Search again' } end
-  if update_info then
-    return { 'Update', 'Refresh', 'Place', '°' .. (cfg.unit == 'C' and 'F' or 'C') }
-  end
-  return { 'Refresh', 'Place', '°' .. (cfg.unit == 'C' and 'F' or 'C') }
+  if update_info then return { 'Update', 'Refresh', 'Menu' } end
+  return { 'Refresh', 'Menu' }
 end
 
 local function button_rect(k, n)
@@ -365,7 +404,8 @@ local function tap(x, y)
     if x >= bx and x < bx + bw and y >= by and y < by + bh then
       status = nil
       if b == 'Update' then download_update()
-      elseif b == 'Refresh' then refresh_forecast(); check_update()
+      elseif b == 'Refresh' then refresh_forecast()
+      elseif b == 'Menu' then open_menu()
       elseif b == 'Place' or b == 'Search again' then ask_place()
       elseif b == 'Back' then screen = 'main'
       else
@@ -431,8 +471,7 @@ end
 function on_load(c)
   local ok, e = pcall(load_cfg)
   if not ok then ERR = tostring(e) end
-  if cfg.lat then refresh_forecast() end
-  check_update()
+  if cfg.lat then refresh_forecast() else check_update() end
 end
 
 function on_leave() pcall(function() ctx.net:keep_wifi(1) end) end
