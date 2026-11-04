@@ -148,7 +148,7 @@ local function download_update()
       status = nil
       kit.show({
         title = 'Update Ready',
-        lines = { fname .. ' saved to App Files.' },
+        lines = { fname .. ' saved to App Files.', 'Open All Files, tap the file, then Install.' },
         rows = { { { 'OK', function() kit.close() end, true } } }
       })
       update_info = nil
