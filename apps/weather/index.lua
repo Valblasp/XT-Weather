@@ -369,7 +369,7 @@ local STALE_S = 30 * 60
 local UA = 'XT Weather/1.4.1 (https://github.com/Valblasp/XT-Weather)'
 
 local APP_VERSION = '1.4.1'
-local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather-ios27/version.json'
+local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
 local cfg = { name = nil, lat = nil, lon = nil, unit = 'C' }
@@ -503,7 +503,13 @@ local function download_update()
       end
     end)
     if okw then
-      status = 'Saved ' .. fname .. '! Open All Files to install.'
+      busy_label = nil
+      status = nil
+      kit.show({
+        title = 'Update Ready',
+        lines = { fname .. ' saved to App Files.' },
+        rows = { { { 'OK', function() kit.close() end, true } } }
+      })
       update_info = nil
     else
       status = 'Could not save file.'

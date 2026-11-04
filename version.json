@@ -1,8 +1,8 @@
 {
   "version": "1.4.1",
   "notes": "Redesign: Liquid Glass style refresh with new app icon. Own implementation.",
-  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather-ios27/xtweather.xtapp",
+  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather-ios27/xtweatherland.xtapp",
+  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }
