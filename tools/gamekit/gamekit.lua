@@ -1,36 +1,25 @@
--- gamekit: shared pieces for the API 2.9 puzzle games (Lights Out, Peg Solitaire, Nonograms,
--- Knight's Tour). tools/gamekit/bundle.py puts it in front of a game's src/main.lua as
--- `local kit = (function() ... end)()`, since the device has no require for package files.
---
---   kit.W, kit.H                      screen size
---   kit.font(name), kit.width(f, s), kit.line_h(name)
---   kit.short(s, n), kit.drop_last(s), kit.wrap(s, fname, maxw)
---   kit.read(name), kit.write(name, s), kit.kv(s)   ctx.storage helpers ("key=value" lines)
---   kit.now_ms(), kit.refresh()
---   kit.moved()                       count a move (a hook for a periodic full refresh; see below)
---   kit.key_accepted(ev)              side buttons send several events per press: keep one
---   kit.show(m), kit.close(), kit.modal()   a box over the screen: { title, lines, rows, cancel },
---                                     rows = { { {label, fn, enabled}, .. }, .. }
---   kit.draw_modal(gg), kit.tap_modal(x, y) -> true when the box took the tap
---   kit.button(gg, x, y, w, h, label, opts)  a framed button with a centred label
--- Every ctx.* function is a method on this API: colon calls everywhere. Nothing is filled black:
--- large black areas ghost on e-ink, and the host draws text black even when asked for white.
+-- Shared UI + storage toolkit for the XT Weather mini app on the XTOS Licorice host.
+-- tools/gamekit/bundle.py pastes this whole block in front of the app's entry script, because the
+-- device host runs each app as one self-contained Lua state with no package loader.
 
 local kit = {}
+
 kit.W, kit.H = 480, 800
 
 function kit.font(name) return ctx.fonts and ctx.fonts[name] end
+
 function kit.width(f, s)
   local ok, w = pcall(function() return f:measure(s) end)
-  return (ok and type(w) == 'number') and w or #s * 11
+  return (ok and type(w) == 'number') and w or #tostring(s) * 11
 end
+
 function kit.line_h(name)
   local ok, h = pcall(function() return kit.font(name).line_height end)
   return (ok and tonumber(h)) or (name == 'large' and 30 or name == 'small' and 20 or 24)
 end
 
--- drop the last character (a whole UTF-8 sequence)
 function kit.drop_last(s) return (s:gsub('[%z\1-\127\192-\255][\128-\191]*$', '')) end
+
 function kit.short(s, n)
   s = tostring(s)
   if #s <= n then return s end
@@ -38,7 +27,7 @@ function kit.short(s, n)
   while #t > n - 1 or (#t > 0 and t:sub(-1):byte() >= 128 and not utf8.len(t)) do t = kit.drop_last(t) end
   return t .. '~'
 end
--- word wrap on ASCII spaces only (%s may also match 0xA0, the second byte of some letters)
+
 function kit.wrap(s, fname, maxw)
   local f, out = kit.font(fname), {}
   for para in (tostring(s) .. '\n'):gmatch('([^\n]*)\n') do
@@ -56,7 +45,9 @@ function kit.read(name)
   local ok, s = pcall(function() return ctx.storage:read(name) end)
   return (ok and type(s) == 'string') and s or nil
 end
+
 function kit.write(name, s) pcall(function() ctx.storage:write(name, s) end) end
+
 function kit.kv(s)
   local t = {}
   for k, v in (s or ''):gmatch('([%w_]+)=([^\n]*)') do t[k] = (v:gsub('%s+$', '')) end
@@ -66,10 +57,6 @@ end
 function kit.now_ms() local ok, t = pcall(function() return ctx.clock:millis() end); return ok and tonumber(t) or nil end
 function kit.refresh() pcall(function() ctx:invalidate() end) end
 
--- e-ink full refresh: API 0.8 had ctx.display:full_refresh(); API 2.9 only offers
--- ctx:defer_full_refresh(n), which on the device (26102401) did not trigger one, and which by its
--- name may rather postpone the host's own periodic refresh. So nothing is asked for: the games
--- showed no ghosting problem without it. kit.moved() stays as the place to add one.
 local moves = 0
 function kit.moved() moves = moves + 1 end
 
@@ -93,7 +80,7 @@ function kit.show(m) modal = m end
 function kit.close() modal = nil end
 function kit.modal() return modal end
 
-local function layout(m)
+local function modal_layout(m)
   local lines = {}
   if m.title then for _k, l in ipairs(kit.wrap(m.title, 'medium', BOX_W - 40)) do lines[#lines + 1] = { l, 'medium' } end end
   for _k, s in ipairs(m.lines or {}) do
@@ -115,17 +102,8 @@ local function layout(m)
   return lines, btns, y, h
 end
 
-function kit.button(gg, x, y, w, h, label, opts)
-  opts = opts or {}
-  local f = kit.font(opts.font or 'medium')
-  gg:rect(x, y, w, h, { line_width = opts.line_width or 2 })
-  local s = tostring(label)
-  while #s > 1 and kit.width(f, s) > w - 10 do s = kit.drop_last(s) end
-  gg:text(x + math.floor((w - kit.width(f, s)) / 2), y + math.floor((h - kit.line_h(opts.font or 'medium')) / 2), s, { font = f })
-end
-
 function kit.draw_modal(gg)
-  local lines, btns, y, h = layout(modal)
+  local lines, btns, y, h = modal_layout(modal)
   gg:rect(BOX_X, y, BOX_W, h)
   gg:rect(BOX_X + 3, y + 3, BOX_W - 6, h - 6)
   local ty = y + 20
@@ -138,7 +116,7 @@ end
 
 function kit.tap_modal(x, y)
   if not modal then return false end
-  local _l, btns, my, mh = layout(modal)
+  local _l, btns, my, mh = modal_layout(modal)
   for _k, bt in ipairs(btns) do
     if x >= bt.x and x < bt.x + bt.w and y >= bt.y and y < bt.y + bt.h then
       if bt.b[3] ~= false then bt.b[2]() end
@@ -147,6 +125,15 @@ function kit.tap_modal(x, y)
   end
   if (y < my or y > my + mh) and modal.cancel then modal.cancel() end
   return true
+end
+
+function kit.button(gg, x, y, w, h, label, opts)
+  opts = opts or {}
+  local f = kit.font(opts.font or 'medium')
+  gg:rect(x, y, w, h, { line_width = opts.line_width or 2 })
+  local s = tostring(label)
+  while #s > 1 and kit.width(f, s) > w - 10 do s = kit.drop_last(s) end
+  gg:text(x + math.floor((w - kit.width(f, s)) / 2), y + math.floor((h - kit.line_h(opts.font or 'medium')) / 2), s, { font = f })
 end
 
 return kit

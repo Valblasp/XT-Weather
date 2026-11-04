@@ -1,4 +1,15 @@
-# 🌤️ XT Weather v1.3.0 — Release Notes & Changelog
+# 🌤️ XT Weather v1.4.0 — Release Notes & Changelog
+
+## 🚀 What's New in v1.4.0
+
+### 🍏 Liquid Glass Redesign
+- The complete visual identity of the app was rebuilt around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale and a floating glass toolbar.
+- No longer resembles any big-G weather app: it now feels like a native weather glance on the e-ink screen.
+
+### 🧑‍💻 Own Implementation
+- The forecast engine, cache handling, weather glyphs and drawing routines were fully rewritten in our own code.
+
+---
 
 ## 🚀 What's New in v1.3.0
 

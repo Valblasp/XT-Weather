@@ -1,9 +1,9 @@
 {
   "app_id": "xtweather",
   "display_name": "XT Weather",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Valblasp",
-  "description": "Detailed weather forecast inspired by Google Weather for Xteink X4 Pro (Open-Meteo).",
+  "description": "Liquid Glass weather forecast for Xteink X4 Pro (Open-Meteo).",
   "entry": "index.lua",
   "api": "2.0",
   "permissions": [

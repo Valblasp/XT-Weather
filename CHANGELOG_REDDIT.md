@@ -1,8 +1,21 @@
-# [RELEASE] XT Weather v1.3.0 for Xteink X4 Pro: Full Source Code, OTA Auto-Updates from GitHub, Auto-Refresh & Landscape Mode!
+# [RELEASE] XT Weather v1.4.0 for Xteink X4 Pro: Liquid Glass redesign in our own code!
 
 Hey everyone! 👋
 
-Thanks for all the feedback and interest on Reddit! Since many of you asked to see the project source code and wanted an easier way to update without connecting to a PC, I have published **XT Weather v1.3.0** with the complete open-source codebase and major new features!
+Following the v1.3.x line, the app got a full **visual makeover**: the forecast glance was rebuilt around the **Liquid Glass** design — frosted glass surfaces, large rounded numerals, refined typography and a floating glass toolbar.
+
+The previous code (heavily inspired by a big-G weather experience) has been **replaced wholesale by a fresh implementation** of the forecast logic, cache, icons and drawing routines, so the app is now 100% our own code.
+
+---
+
+### 🌤️ What's New in v1.4.0
+
+1. **🍏 Liquid Glass Redesign**:
+   - Frosted glass surfaces, large rounded numerals, refined typography hierarchy.
+   - Floating glass action bar at the bottom.
+
+2. **🧑‍💻 Own Codebase**:
+   - All forecast/engine/drawing code substituted with a brand-new implementation.
 
 ---
 

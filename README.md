@@ -3,18 +3,20 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.3.0-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.4.0-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
+A weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
 
-Inspired by the minimalist Material You design of **Google Weather**, specifically formatted and optimized for 480×800 e-paper displays.
+Redesigned in **v1.4.0** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, clear typography hierarchy and a floating glass toolbar — everything re-implemented from scratch in our own code, so the glance no longer resembles any big-G search engine.
+
+Data still comes from the same free source: [Open-Meteo](https://open-meteo.com) (CC BY 4.0).
 
 ---
 
 ## ✨ Features
 
-- **Google Weather Aesthetic**: Large high-contrast temperature readout, crisp monochrome WMO weather icons, feels-like temperature, wind speed, and humidity.
+- **Liquid Glass design**: frosted glass panels, hairline separators, large rounded temperature numerals, SF-style type scale and a floating glass action bar.
 - **Hourly Forecast**: Step-by-step projection for the next 12 hours with temperature and chance of rain.
 - **4-Day Outlook**: Daily low / high temperature ranges and precipitation probabilities.
 - **Standalone Wi-Fi**: Fetches live weather data and geocoding directly via the **Open-Meteo API** (free, no account or API keys required). Disables Wi-Fi immediately after syncing to preserve battery life.
@@ -24,27 +26,14 @@ Inspired by the minimalist Material You design of **Google Weather**, specifical
 
 ---
 
-## 🚀 What's New in v1.3.1
+## 🚀 What's New in v1.4.0
 
-OTA UPdate Test
+### 🍏 Liquid Glass Redesign
+- The whole look of the app was rebuilt: frosted glass surfaces, large rounded numerals, refined typography and a floating glass toolbar replace the previous visual language.
+- The interface now feels like a native weather glance on the e-ink screen instead of a third-party web-app clone.
 
-### 🔁 OTA Auto-Updates from GitHub
-When a new version is published to this repository, the app detects it automatically on launch and displays an **`[Update]`** button. Tapping it downloads and installs the new `.xtapp` directly over Wi-Fi — no PC or USB cable required.
-
-### ⚡ Auto-Refresh on Launch
-The app now automatically connects to Wi-Fi and fetches the freshest weather forecast each time you open it. No need to manually tap **Refresh** after launch. Wi-Fi turns off right after syncing to conserve battery.
-
-### 🏠 Hardware Home & Back Button Exit
-- **Central Home Pad**: Pressing the central Home pad exits the app cleanly back to the system launcher.
-- **Back Key**: Pressing Back on the main screen also closes the application, matching native device navigation behavior.
-
-### 📐 Native Portrait & Landscape Modes
-| Edition | File | Best For | Resolution |
-|---|---|---|---|
-| **Portrait** | `xtweather.xtapp` | Handheld reading | 480 × 800 |
-| **Landscape** | `xtweatherland.xtapp` | Desk stand / nightstand dock | 800 × 480 |
-
-Both editions can be installed simultaneously on your device.
+### 🧑‍💻 Own Codebase
+- The forecast engine, cache, icons and drawing routines were rewritten from scratch.
 
 ---
 
@@ -77,7 +66,7 @@ Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weath
 
 - **Search Place**: Tap the **Place** button at the bottom, type your city using the on-screen keyboard, and pick your location from the results.
 - **Refresh**: Tap **Refresh** to reconnect to Wi-Fi and fetch the latest forecast.
-- **Switch Units**: Tap **°C** or **°F** at the bottom to switch temperature units instantly.
+- **Switch Units**: Tap **`°C`** or **`°F`** at the bottom to switch temperature units instantly.
 - **Exit**: Press the central **Home pad** or the **Back key** to return to the reader menu.
 - **Update**: When an update is available, tap the **Update** button that appears in the toolbar to install it wirelessly.
 
@@ -123,7 +112,7 @@ This validates the Lua source with `lualint55`, bundles modules, and produces si
 │   └── lualint55.py            # Lua 5.5 syntax verification
 ├── build_both.py               # One-click build script for both orientations
 ├── xtpack.py                   # .xtapp container packer
-└── version.json                # OTA version manifest for auto-updates
+└── version.json                # OTA update manifest for auto-updates
 ```
 
 ---

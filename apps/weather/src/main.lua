@@ -1,19 +1,20 @@
--- Weather for XTOS Licorice, API 2.9 (uses tools/gamekit and src/wx.lua). Needs Wi-Fi.
+-- XT Weather: liquid-glass style forecast glance for the Xteink X4 Pro on the XTOS Licorice host.
 --
--- The forecast from Open-Meteo (free, no key): now, the next 12 hours and 4 days, for a place
--- found by name (Open-Meteo's geocoding). Kept in forecast.txt, so it opens at once. The app
--- fetches again when the forecast is over 30 minutes old, or on Refresh.
+-- Layout: portrait (480x800) and landscape (800x480) are handled by the same state machine; the
+-- drawing routines pick the variant from the context size.
+--
+-- Data: Open-Meteo (free, no key) -> key=value cache file -> on-screen glance.
 
 local X = require('wx')
 local STALE_S = 30 * 60
-local UA = 'XteinkLicoriceWeather/1.0 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.4 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.3.1'
+local APP_VERSION = '1.4.0'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
 local update_info = nil
 
 local cfg = { name = nil, lat = nil, lon = nil, unit = 'C' }
-local fc = nil                  -- the forecast (X.parse_cache)
+local fc = nil                  -- parsed forecast cache (X.parse_cache)
 local screen = 'main'           -- main | places
 local places = {}
 local status, busy_label, ERR = nil, nil, nil
@@ -27,22 +28,24 @@ local function layout(gg)
     end
   end
   local is_land = (w > h)
-  local btn_h = is_land and 50 or 64
-  local btn_y = h - btn_h - 14
-  return { w = w, h = h, is_land = is_land, btn_y = btn_y, btn_h = btn_h }
+  local bar_h = is_land and 50 or 66
+  local bar_y = h - bar_h - 12
+  return { w = w, h = h, is_land = is_land, bar_y = bar_y, bar_h = bar_h }
 end
 
 local L = layout()
 
 local function now_sec()
   local ok, t = pcall(function() return ctx.clock:now() end)
-  return (ok and type(t) == 'table' and tonumber(t.epoch_sec)) and math.floor(tonumber(t.epoch_sec)) or 0
+  if ok and type(t) == 'table' and tonumber(t.epoch_sec) then return math.floor(tonumber(t.epoch_sec)) end
+  return 0
 end
+
 local function hhmm(epoch)
+  if not epoch then return '' end
   local ok, t = pcall(function() return ctx.clock:now() end)
-  if not epoch or not ok or type(t) ~= 'table' or not tonumber(t.hour) then return '' end
-  -- the wall clock now, moved back by the age of the forecast
-  local wall = tonumber(t.hour) * 3600 + (tonumber(t.minute) or 0) * 60 - (now_sec() - epoch)
+  if not ok or type(t) ~= 'table' or not tonumber(t.hour) then return '' end
+  local wall = tonumber(t.hour) * 3600 + (tonumber(t.minute) or 0) * 60 - (now_sec() - tonumber(epoch))
   wall = wall % 86400
   return string.format('%02d:%02d', wall // 3600, (wall % 3600) // 60)
 end
@@ -53,6 +56,7 @@ local function save_cfg()
   kit.write('settings.txt', 'name=' .. (cfg.name or '') .. '\nlat=' .. (cfg.lat or '') .. '\nlon=' .. (cfg.lon or '') ..
     '\nunit=' .. cfg.unit)
 end
+
 local function load_cfg()
   local t = kit.kv(kit.read('settings.txt'))
   cfg.name = (t.name and t.name ~= '') and t.name or nil
@@ -176,101 +180,95 @@ end
 
 local function deg(v) return v and (tostring(v) .. '°') or '-' end
 
+local function draw_glass_bar(gg)
+  gg:rect(12, L.bar_y, L.w - 24, L.bar_h, { line_width = 2 })
+end
+
+local function draw_button(gg, x, y, w, h, label)
+  gg:rect(x, y, w, h, { line_width = 2 })
+  local f = kit.font('medium')
+  local s = tostring(label)
+  while #s > 1 and kit.width(f, s) > w - 10 do s = kit.drop_last(s) end
+  gg:text(x + math.floor((w - kit.width(f, s)) / 2), y + math.floor((h - kit.line_h('medium')) / 2), s, { font = f })
+end
+
 local function draw_main_portrait(gg)
   local W = L.w
-  local place_str = kit.short(fc.place, 24)
-  gg:text(16,  8, place_str, { font = kit.font('large') })
-  gg:text(17,  8, place_str, { font = kit.font('large') })   -- double-draw for bold/heavier weight
-  gg:text(16, 48, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
-  gg:line(0, 80, W, 80)
-  -- now: a big temperature, the icon and the details
-  local kind, text = X.kind(fc.now_code)
+  gg:text(16, 8, kit.short(fc.place, 24), { font = kit.font('large') })
+  gg:text(16, 38, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
+  gg:line(0, 54, W, 54)
+  local kind, label = X.kind(fc.now_code)
+  gg:text(16, 74, label, { font = kit.font('large') })
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local x = X.big_number(gg, temp, 24, 104, 96)
-  gg:text(x + 2, 100, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, W - 140, 92, 120)
-  gg:text(24, 212, text, { font = kit.font('large') })
-  gg:text(24, 250, 'feels ' .. deg(fc.now_feel) .. '   humidity ' .. (fc.now_hum or '-') .. '%   wind ' .. (fc.now_wind or '-') .. ' km/h',
-          { font = kit.font('small') })
-  gg:line(0, 282, W, 282)
-  -- the next 12 hours, every second hour
+  local bx = X.big_number(gg, temp, 20, 106, 100)
+  gg:text(bx + 2, 106, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 150, 84, 114)
+  gg:rect(16, 232, W - 32, 70, { line_width = 2 })
+  gg:text(20, 250, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('medium') })
+  gg:text(20, 278, 'Humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
+  gg:text(20, 296, 'Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
+  gg:text(16, 322, 'Hourly', { font = kit.font('medium') })
   local col = W // 6
   for k = 1, 6 do
     local h = fc.hours[(k - 1) * 2 + 1]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 10, 292, h.time, { font = kit.font('small') })
-      X.icon(gg, (X.kind(h.code)), cx + 14, 316, 48)
-      gg:text(cx + 14, 370, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 14, 398, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 10, 342, h.time, { font = kit.font('small') })
+      X.icon(gg, X.kind(h.code), cx + 14, 364, 36)
+      gg:text(cx + 12, 404, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 12, 428, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-  gg:line(0, 428, W, 428)
-  -- the days
+  gg:line(0, 442, W, 442)
+  gg:text(16, 456, '4-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
-    local y = 440 + (k - 1) * 62
-    gg:text(16, y + 16, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, (X.kind(d.code)), 110, y + 4, 52)
-    gg:text(180, y + 16, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-    gg:text(340, y + 18, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    local y = 474 + (k - 1) * 50
+    gg:text(16, y + 12, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+    X.icon(gg, X.kind(d.code), 104, y + 2, 48)
+    gg:text(180, y + 12, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    gg:text(300, y + 14, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
   end
 end
 
 local function draw_main_landscape(gg)
   local W = L.w
-  -- Top header bar (y: 0..42)
-  local place_str_land = kit.short(fc.place, 26)
-  gg:text(16, 10, place_str_land, { font = kit.font('large') })
-  gg:text(17, 10, place_str_land, { font = kit.font('large') })  -- double-draw for bold/heavier weight
-  gg:text(360, 14, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
-  gg:text(W - 130, 12, 'XT Weather', { font = kit.font('medium') })
-  gg:line(0, 42, W, 42)
-
-  -- Top Section (y: 44..234)
-  -- Dividing vertical line between Current and 4-Days
-  gg:line(375, 42, 375, 236)
-
-  -- Left column (Current):
-  local kind, text = X.kind(fc.now_code)
+  gg:text(16, 8, kit.short(fc.place, 26), { font = kit.font('large') })
+  gg:text(16, 38, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
+  gg:line(0, 52, W, 52)
+  local kind, label = X.kind(fc.now_code)
+  gg:text(20, 68, label, { font = kit.font('large') })
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local x = X.big_number(gg, temp, 20, 52, 74)
-  gg:text(x + 2, 50, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, 265, 48, 92)
-  gg:text(20, 142, kit.short(text, 24), { font = kit.font('large') })
-  gg:text(20, 180, 'feels ' .. deg(fc.now_feel) .. '   humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
-  gg:text(20, 204, 'wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
-
-  -- Right column (4-Day forecast, x = 390..W-16):
+  local bx = X.big_number(gg, temp, 20, 88, 56)
+  gg:text(bx + 2, 88, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 150, 54, 80)
+  gg:text(20, 166, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('small') })
+  gg:text(20, 186, 'Humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
+  gg:text(20, 206, 'Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
+  gg:line(366, 52, 366, 232)
+  gg:line(0, 232, W, 232)
   for k, d in ipairs(fc.days) do
     if k <= 4 then
-      local y = 46 + (k - 1) * 46
-      gg:text(390, y + 12, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-      X.icon(gg, (X.kind(d.code)), 490, y + 4, 38)
-      gg:text(545, y + 12, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-      gg:text(690, y + 12, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
-      if k < 4 then gg:line(390, y + 46, W - 16, y + 46) end
+      local y = 56 + (k - 1) * 46
+      gg:text(386, y + 10, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+      X.icon(gg, X.kind(d.code), 486, y + 2, 34)
+      gg:text(540, y + 10, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+      gg:text(690, y + 10, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+      if k < 4 then gg:line(386, y + 46, W - 16, y + 46) end
     end
   end
-
-  -- Horizontal line below top section
-  gg:line(0, 236, W, 236)
-
-  -- Hourly Forecast (y: 238..376): 8 columns across 800px width
   local slots = 8
   local col = W // slots
   for k = 1, slots do
     local h = fc.hours[k]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 25, 244, h.time, { font = kit.font('small') })
-      X.icon(gg, (X.kind(h.code)), cx + 30, 270, 40)
-      gg:text(cx + 28, 318, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 28, 346, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 20, 258, h.time, { font = kit.font('small') })
+      X.icon(gg, X.kind(h.code), cx + 26, 278, 30)
+      gg:text(cx + 24, 314, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 24, 338, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-
-  -- Horizontal line before buttons
-  gg:line(0, 376, W, 376)
+  gg:line(0, 352, W, 352)
 end
 
 local function draw_main(gg)
@@ -290,16 +288,16 @@ local function draw_places(gg)
   local W = L.w
   gg:text(16, 16, 'Choose the place', { font = kit.font('large') })
   if not L.is_land then
-    gg:line(0, 80, W, 80)
+    gg:line(0, 84, W, 84)
     for k, p in ipairs(places) do
-      local y = 90 + (k - 1) * 74
+      local y = 96 + (k - 1) * 76
       gg:text(20, y + 6, kit.short(p.name, 30), { font = kit.font('medium') })
-      gg:text(20, y + 36, kit.short(p.where, 46), { font = kit.font('small') })
-      gg:line(16, y + 68, W - 16, y + 68)
+      gg:text(20, y + 38, kit.short(p.where, 46), { font = kit.font('small') })
+      gg:line(16, y + 70, W - 16, y + 70)
     end
   else
     gg:line(0, 46, W, 46)
-    gg:line(395, 46, 395, L.btn_y - 8)
+    gg:line(395, 46, 395, L.bar_y - 8)
     for k, p in ipairs(places) do
       if k <= 8 then
         local col_idx = (k <= 4) and 0 or 1
@@ -307,9 +305,9 @@ local function draw_places(gg)
         local bx = (col_idx == 0) and 20 or 415
         local lx1 = (col_idx == 0) and 16 or 410
         local lx2 = (col_idx == 0) and 380 or (W - 16)
-        local y = 52 + row_idx * 74
+        local y = 52 + row_idx * 76
         gg:text(bx, y + 6, kit.short(p.name, 26), { font = kit.font('medium') })
-        gg:text(bx, y + 36, kit.short(p.where, 38), { font = kit.font('small') })
+        gg:text(bx, y + 38, kit.short(p.where, 38), { font = kit.font('small') })
         gg:line(lx1, y + 70, lx2, y + 70)
       end
     end
@@ -323,9 +321,10 @@ local function buttons()
   end
   return { 'Refresh', 'Place', '°' .. (cfg.unit == 'C' and 'F' or 'C') }
 end
+
 local function button_rect(k, n)
   local bw = math.floor((L.w - 24 - (n - 1) * 8) / n)
-  return 12 + (k - 1) * (bw + 8), L.btn_y, bw, L.btn_h
+  return 12 + (k - 1) * (bw + 8), L.bar_y, bw, L.bar_h
 end
 
 function on_draw(c, gg)
@@ -337,13 +336,14 @@ function on_draw(c, gg)
     if screen == 'places' then draw_places(gg) else draw_main(gg) end
     local line = busy_label or status or ERR
     if line then
-      local ly = L.is_land and (L.btn_y - 24) or (L.btn_y - 30)
-      gg:text(12, ly, kit.short(line, L.is_land and 80 or 48), { font = kit.font('small') })
+      local ly = L.bar_y - (L.is_land and 24 or 30)
+      gg:text(12, ly, kit.short(tostring(line), L.is_land and 80 or 48), { font = kit.font('small') })
     end
     local bs = buttons()
+    draw_glass_bar(gg)
     for k, b in ipairs(bs) do
       local x, y, bw, bh = button_rect(k, #bs)
-      kit.button(gg, x, y, bw, bh, b, { font = 'medium' })
+      draw_button(gg, x, y, bw, bh, b)
     end
   end)
   if not ok then pcall(function() gg:text(8, L.h - 60, kit.short('draw ERR ' .. tostring(e), 46)) end) end
@@ -372,10 +372,10 @@ local function tap(x, y)
   end
   if screen == 'places' then
     local p = nil
-    if not L.is_land and y >= 90 then
-      p = places[(y - 90) // 74 + 1]
-    elseif L.is_land and y >= 52 and y < L.btn_y - 8 then
-      local row = (y - 52) // 74
+    if not L.is_land and y >= 96 then
+      p = places[(y - 96) // 76 + 1]
+    elseif L.is_land and y >= 52 and y < L.bar_y - 8 then
+      local row = (y - 52) // 76
       if row >= 0 and row < 4 then
         local idx = (x < 395) and (row + 1) or (row + 5)
         p = places[idx]
@@ -428,6 +428,7 @@ function on_load(c)
   if cfg.lat then refresh_forecast() end
   check_update()
 end
+
 function on_leave() pcall(function() ctx.net:keep_wifi(1) end) end
 
 if rawget(_G, '__TEST') then
