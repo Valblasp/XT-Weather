@@ -366,9 +366,9 @@ end
 
 local X = require('wx')
 local STALE_S = 30 * 60
-local UA = 'XT Weather/1.4.2 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.4.3 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.4.2'
+local APP_VERSION = '1.4.3'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
@@ -588,6 +588,7 @@ local function deg(v) return v and (tostring(v) .. '°') or '-' end
 
 local function draw_glass_bar(gg)
   gg:rect(12, L.bar_y, L.w - 24, L.bar_h, { line_width = 2 })
+  gg:rect(14, L.bar_y + 2, L.w - 28, L.bar_h - 4, { line_width = 1 })
 end
 
 local function draw_button(gg, x, y, w, h, label)
@@ -600,81 +601,107 @@ end
 
 local function draw_main_portrait(gg)
   local W = L.w
-  gg:text(16, 8, kit.short(fc.place, 24), { font = kit.font('large') })
-  gg:text(16, 38, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
-  gg:line(0, 54, W, 54)
+  -- header panel: city (left) + updated time (right)
+  gg:rect(8, 4, W - 16, 46, { line_width = 2 })
+  gg:rect(10, 6, W - 20, 42, { line_width = 1 })
+  gg:text(16, 14, kit.short(fc.place, 22), { font = kit.font('large') })
+  local upd_str = 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or '')
+  gg:text(W - kit.width(kit.font('small'), upd_str) - 16, 22, upd_str, { font = kit.font('small') })
+  gg:line(0, 56, W, 56, { line_width = 2 })
+
   local kind, label = X.kind(fc.now_code)
-  gg:text(16, 74, label, { font = kit.font('large') })
+  gg:text(16, 66, label, { font = kit.font('large') })
+
+  -- big temperature + icon
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local bx = X.big_number(gg, temp, 20, 106, 100)
-  gg:text(bx + 2, 106, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, W - 150, 84, 114)
-  gg:rect(16, 232, W - 32, 70, { line_width = 2 })
-  gg:text(20, 250, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('medium') })
-  gg:text(20, 278, 'Humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
-  gg:text(20, 296, 'Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
-  gg:text(16, 322, 'Hourly', { font = kit.font('medium') })
+  local bx = X.big_number(gg, temp, 20, 96, 120)
+  gg:text(bx + 4, 96, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 132, 72, 120)
+
+  -- feels-like glass panel
+  gg:rect(12, 228, W - 24, 86, { line_width = 2 })
+  gg:rect(14, 230, W - 28, 82, { line_width = 1 })
+  gg:text(20, 240, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('medium') })
+  gg:text(20, 270, 'Humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
+  gg:text(20, 292, 'Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
+
+  gg:text(16, 326, 'Hourly', { font = kit.font('medium') })
   local col = W // 6
   for k = 1, 6 do
     local h = fc.hours[(k - 1) * 2 + 1]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 10, 342, h.time, { font = kit.font('small') })
-      X.icon(gg, X.kind(h.code), cx + 14, 364, 36)
-      gg:text(cx + 12, 404, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 12, 428, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 8, 348, h.time, { font = kit.font('small') })
+      X.icon(gg, X.kind(h.code), cx + 12, 372, 44)
+      gg:text(cx + 10, 420, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 10, 446, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-  gg:line(0, 442, W, 442)
-  gg:text(16, 456, '4-Day Outlook', { font = kit.font('medium') })
+  gg:line(0, 468, W, 468, { line_width = 2 })
+
+  gg:text(16, 480, '4-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
-    local y = 474 + (k - 1) * 50
-    gg:text(16, y + 12, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, X.kind(d.code), 104, y + 2, 48)
-    gg:text(180, y + 12, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-    gg:text(300, y + 14, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    if k > 4 then break end
+    local y = 500 + (k - 1) * 52
+    gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+    X.icon(gg, X.kind(d.code), 100, y + 4, 44)
+    gg:text(160, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    gg:text(290, y + 16, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    if k < 4 then gg:line(16, y + 52, W - 16, y + 52, { line_width = 1 }) end
   end
 end
 
 local function draw_main_landscape(gg)
   local W = L.w
-  gg:text(16, 8, kit.short(fc.place, 26), { font = kit.font('large') })
-  gg:text(16, 38, 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or ''), { font = kit.font('small') })
-  gg:line(0, 52, W, 52)
+  -- header panel
+  gg:rect(8, 4, W - 16, 44, { line_width = 2 })
+  gg:rect(10, 6, W - 20, 40, { line_width = 1 })
+  gg:text(16, 14, kit.short(fc.place, 26), { font = kit.font('large') })
+  local upd_str = 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and '  (old)' or '')
+  gg:text(W - kit.width(kit.font('small'), upd_str) - 16, 20, upd_str, { font = kit.font('small') })
+  gg:line(0, 52, W, 52, { line_width = 2 })
+
   local kind, label = X.kind(fc.now_code)
-  gg:text(20, 68, label, { font = kit.font('large') })
+  gg:text(20, 62, label, { font = kit.font('large') })
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local bx = X.big_number(gg, temp, 20, 88, 56)
-  gg:text(bx + 2, 88, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, W - 150, 54, 80)
-  gg:text(20, 166, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('small') })
-  gg:text(20, 186, 'Humidity ' .. (fc.now_hum or '-') .. '%', { font = kit.font('small') })
-  gg:text(20, 206, 'Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
-  gg:line(366, 52, 366, 232)
-  gg:line(0, 232, W, 232)
+  local bx = X.big_number(gg, temp, 20, 84, 72)
+  gg:text(bx + 4, 84, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 130, 58, 90)
+
+  -- feels glass panel
+  gg:rect(16, 166, 340, 68, { line_width = 2 })
+  gg:rect(18, 168, 336, 64, { line_width = 1 })
+  gg:text(24, 176, 'Feels like ' .. deg(fc.now_feel), { font = kit.font('medium') })
+  gg:text(24, 200, 'Humidity ' .. (fc.now_hum or '-') .. '%   Wind ' .. (fc.now_wind or '-') .. ' km/h', { font = kit.font('small') })
+
+  gg:line(366, 52, 366, 236, { line_width = 2 })
+  gg:line(0, 236, W, 236, { line_width = 2 })
+
   for k, d in ipairs(fc.days) do
     if k <= 4 then
-      local y = 56 + (k - 1) * 46
-      gg:text(386, y + 10, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-      X.icon(gg, X.kind(d.code), 486, y + 2, 34)
-      gg:text(540, y + 10, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+      local y = 56 + (k - 1) * 44
+      gg:text(386, y + 8, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+      X.icon(gg, X.kind(d.code), 480, y, 36)
+      gg:text(530, y + 8, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
       gg:text(690, y + 10, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
-      if k < 4 then gg:line(386, y + 46, W - 16, y + 46) end
+      if k < 4 then gg:line(386, y + 44, W - 16, y + 44, { line_width = 1 }) end
     end
   end
+
   local slots = 8
   local col = W // slots
+  gg:text(16, 244, 'Hourly', { font = kit.font('medium') })
   for k = 1, slots do
     local h = fc.hours[k]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 20, 258, h.time, { font = kit.font('small') })
-      X.icon(gg, X.kind(h.code), cx + 26, 278, 30)
-      gg:text(cx + 24, 314, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 24, 338, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 18, 262, h.time, { font = kit.font('small') })
+      X.icon(gg, X.kind(h.code), cx + 22, 282, 36)
+      gg:text(cx + 20, 322, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 20, 346, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-  gg:line(0, 352, W, 352)
+  gg:line(0, 360, W, 360, { line_width = 2 })
 end
 
 local function draw_main(gg)
