@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 WEATHER_DIR = os.path.join(HERE, 'apps', 'weather')
 OUT_DIR = HERE  # Output directly in repo root
 
-VERSION = '1.4.2'
+VERSION = '1.5'
 
 COMMON = {
     "author": "Valblasp",
