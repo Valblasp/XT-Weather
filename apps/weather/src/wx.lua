@@ -30,7 +30,7 @@ function X.forecast_url(lat, lon, unit)
     current = 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m',
     hourly = 'temperature_2m,precipitation_probability,weather_code',
     daily = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
-    forecast_days = '4', timezone = 'auto', wind_speed_unit = 'kmh'
+    forecast_days = '7', timezone = 'auto', wind_speed_unit = 'kmh'
   }
   if unit == 'F' then q.temperature_unit = 'fahrenheit' end
   local parts = {}
