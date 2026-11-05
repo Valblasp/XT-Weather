@@ -13,7 +13,7 @@ local APP_VERSION = '1.4.2'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
-local cfg = { name = nil, lat = nil, lon = nil, unit = 'C' }
+local cfg = { name = nil, lat = nil, lon = nil, unit = 'C', lock = false }
 local fc = nil                  -- parsed forecast cache (X.parse_cache)
 local screen = 'main'           -- main | places
 local places = {}
@@ -54,7 +54,7 @@ end
 
 local function save_cfg()
   kit.write('settings.txt', 'name=' .. (cfg.name or '') .. '\nlat=' .. (cfg.lat or '') .. '\nlon=' .. (cfg.lon or '') ..
-    '\nunit=' .. cfg.unit)
+    '\nunit=' .. cfg.unit .. '\nlock=' .. tostring(cfg.lock == true))
 end
 
 local function load_cfg()
@@ -62,6 +62,7 @@ local function load_cfg()
   cfg.name = (t.name and t.name ~= '') and t.name or nil
   cfg.lat, cfg.lon = tonumber(t.lat), tonumber(t.lon)
   cfg.unit = t.unit == 'F' and 'F' or 'C'
+  cfg.lock = (t.lock == 'true')
   fc = X.parse_cache(kit.read('forecast.txt'))
 end
 
@@ -203,22 +204,99 @@ local function ask_place()
   end)
 end
 
+local function is_lock()
+  local L = ctx.lockscreen
+  if L and L.is_default then
+    local ok, def = pcall(function() return L:is_default() end)
+    if ok and type(def) == 'boolean' then return def end
+  end
+  return cfg.lock == true
+end
+
+local function toggle_lock()
+  local L = ctx.lockscreen
+  if not L and not (ctx.system and ctx.system.set_as_lockscreen_app) then
+    kit.show({
+      title = 'Lock Screen Not Available',
+      lines = {
+        'This device firmware did not expose',
+        'the XTOS Licorice lockscreen interface.'
+      },
+      cancel = function() kit.close() end,
+      rows = { { { 'OK', function() kit.close() end, true } } }
+    })
+    return
+  end
+
+  if is_lock() then
+    if L and L.clear_default then
+      pcall(function() L:clear_default() end)
+    end
+    cfg.lock = false
+    save_cfg()
+    status = 'Lock screen: turned off.'
+    kit.show({
+      title = 'Lock Screen Disabled',
+      lines = {
+        'XT Weather will no longer appear when sleeping.'
+      },
+      cancel = function() kit.close() end,
+      rows = { { { 'OK', function() kit.close() end, true } } }
+    })
+  else
+    if L and L.set_default then
+      pcall(function() L:set_default() end)
+    elseif ctx.system and ctx.system.set_as_lockscreen_app then
+      pcall(function() ctx.system:set_as_lockscreen_app() end)
+    end
+    cfg.lock = true
+    save_cfg()
+    status = 'Lock screen: active!'
+    kit.show({
+      title = 'Lock Screen Activated',
+      lines = {
+        'XT Weather set as lock screen / wallpaper.',
+        '',
+        'IMPORTANT REQUIREMENT:',
+        'In device Settings > Display > Off wallpaper,',
+        'make sure it is set to "Default".',
+        '(If set to "Custom", device shows a picture)'
+      },
+      cancel = function() kit.close() end,
+      rows = { { { 'OK', function() kit.close() end, true } } }
+    })
+  end
+end
+
 local function open_menu()
   local unit_label = cfg.unit == 'C' and 'Switch to °F' or 'Switch to °C'
+  local lock_on = is_lock()
+  local lock_label = lock_on and 'Lock screen: ON (Disable)' or 'Set as Lock Screen'
   kit.show({
-    title = 'Menu',
-    lines = { 'City: ' .. (cfg.name or 'not set'), 'Version ' .. APP_VERSION },
+    title = 'XT Weather Menu',
+    lines = {
+      'City: ' .. (cfg.name or 'not set'),
+      'Lock screen: ' .. (lock_on and 'Active (hourly refresh)' or 'Off'),
+      'Version ' .. APP_VERSION
+    },
     cancel = function() kit.close() end,
     rows = {
-      { { 'City', function() kit.close(); ask_place() end, true } },
-      { { unit_label, function()
-          kit.close()
-          cfg.unit = cfg.unit == 'C' and 'F' or 'C'
-          save_cfg()
-          refresh_forecast()
-        end, true } },
-      { { 'Check updates', function() kit.close(); check_update(true) end, true } },
-      { { 'Close', function() kit.close() end, true } }
+      {
+        { 'City', function() kit.close(); ask_place() end, true },
+        { unit_label, function()
+            kit.close()
+            cfg.unit = cfg.unit == 'C' and 'F' or 'C'
+            save_cfg()
+            refresh_forecast()
+          end, true }
+      },
+      {
+        { lock_label, function() kit.close(); toggle_lock() end, true }
+      },
+      {
+        { 'Check updates', function() kit.close(); check_update(true) end, true },
+        { 'Close', function() kit.close() end, true }
+      }
     }
   })
 end
