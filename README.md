@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.4.6-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.4.1.1-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
@@ -51,7 +51,7 @@ Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surf
 
 ---
 
-## 🚀 What's New in v1.4.6
+## 🚀 What's New in v1.4.1.1
 
 - **Opaque Modal Sheets**: Integrated upstream paper-fill rendering in gamekit.lua so the Menu and update dialogs are completely opaque on e-ink, preventing background ghosting.
 - **Project Origins & Attribution**: Documented full project heritage and credit to Omer Faruk Inel's foundational 	ouch-licorice-apps.
@@ -63,7 +63,7 @@ Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surf
 
 | Version | Highlights |
 |---|---|
-| **v1.4.6** | Opaque modal sheets (no e-ink bleed-through), heritage & attribution documentation |
+| **v1.4.1.1** | Opaque modal sheets (no e-ink bleed-through), heritage & attribution documentation |
 | v1.4.3 | More distinct Liquid Glass look: larger temperature, glass panels, clearer layout |
 
 | Version | Highlights |

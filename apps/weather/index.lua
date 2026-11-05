@@ -368,9 +368,9 @@ end
 
 local X = require('wx')
 local STALE_S = 30 * 60
-local UA = 'XT Weather/1.4.6 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.4.1.1 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.4.6'
+local APP_VERSION = '1.4.1.1'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
