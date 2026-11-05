@@ -107,6 +107,8 @@ end
 
 function kit.draw_modal(gg)
   local lines, btns, y, h = modal_layout(modal)
+  -- paper first, so the page under the box does not show through it
+  gg:rect(BOX_X, y, BOX_W, h, { fill = true, color = 0 })
   gg:rect(BOX_X, y, BOX_W, h)
   gg:rect(BOX_X + 3, y + 3, BOX_W - 6, h - 6)
   local ty = y + 20
@@ -357,18 +359,18 @@ end
 return X
 end
 
--- XT Weather: liquid-glass style forecast glance for the Xteink X4 Pro on the XTOS Licorice host.
+-- XT Weather: liquid-glass style forecast glance for the Xteink X4 Pro on XTOS Licorice.
+-- Originally forked from touch-licorice-apps by Omer Faruk Inel; enhanced with Liquid Glass UI,
+-- OTA updates, options menu, and expanded forecasts.
 --
--- Layout: portrait (480x800) and landscape (800x480) are handled by the same state machine; the
--- drawing routines pick the variant from the context size.
---
+-- Layout: portrait (480x800) and landscape (800x480) are handled by the same state machine.
 -- Data: Open-Meteo (free, no key) -> key=value cache file -> on-screen glance.
 
 local X = require('wx')
 local STALE_S = 30 * 60
-local UA = 'XT Weather/1.4.3 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.4.6 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.4.3'
+local APP_VERSION = '1.4.6'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 

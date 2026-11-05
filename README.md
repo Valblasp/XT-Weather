@@ -3,12 +3,14 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.4.3-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.4.6-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
 
-Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale and a floating glass toolbar — everything re-implemented from scratch in our own code. **v1.4.2** adds a cleaner **Menu** and a safer update flow.
+> **Note on Origins & Fork:** XT Weather originated as an enhanced fork of the open-source Weather mini-app from [touch-licorice-apps](https://github.com/omer-faruq-xteink/touch-licorice-apps) by **Omer Faruk Inel**. XT Weather extends the original with a complete **Liquid Glass** visual redesign, expanded 5-day / 12-hour forecasts, inline header layouts, an interactive options menu, and in-app OTA download updates.
+
+Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale, an opaque modal sheet and a floating glass toolbar.
 
 ---
 
@@ -49,7 +51,20 @@ Redesigned in **v1.4.1** around the **Liquid Glass** design: frosted glass surfa
 
 ---
 
+## 🚀 What's New in v1.4.6
+
+- **Opaque Modal Sheets**: Integrated upstream paper-fill rendering in gamekit.lua so the Menu and update dialogs are completely opaque on e-ink, preventing background ghosting.
+- **Project Origins & Attribution**: Documented full project heritage and credit to Omer Faruk Inel's foundational 	ouch-licorice-apps.
+- **Landscape & Portrait Fine-Tuning**: Polished contrast, panel lines, and spacing across orientations.
+
+---
+
 ## 📋 Changelog
+
+| Version | Highlights |
+|---|---|
+| **v1.4.6** | Opaque modal sheets (no e-ink bleed-through), heritage & attribution documentation |
+| v1.4.3 | More distinct Liquid Glass look: larger temperature, glass panels, clearer layout |
 
 | Version | Highlights |
 |---|---|
@@ -111,7 +126,10 @@ Grab the latest release from the [Releases](https://github.com/Valblasp/XT-Weath
 
 ---
 
-## 📄 License
+## 📄 License & Acknowledgments
 
 This project is open-source under the [MIT License](LICENSE).  
-Weather data courtesy of [Open-Meteo.com](https://open-meteo.com) (CC BY 4.0).
+
+### Acknowledgments & Credits
+- **Original Project & Author:** Originally based on and forked from the Weather mini-app by [Omer Faruk Inel](https://github.com/omer-faruq-xteink/touch-licorice-apps) (	ouch-licorice-apps), licensed under MIT. We gratefully acknowledge his pioneering work creating the initial Licorice app ecosystem.
+- **Weather API:** Weather forecasts and geocoding courtesy of [Open-Meteo.com](https://open-meteo.com) (CC BY 4.0).

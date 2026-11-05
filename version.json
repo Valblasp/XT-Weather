@@ -1,6 +1,6 @@
 {
-  "version": "1.4.3",
-  "notes": "More distinct Liquid Glass look: larger temperature, glass panels, clearer layout.",
+  "version": "1.4.6",
+  "notes": "Opaque modal sheets (no e-ink ghosting), attribution & heritage documentation, Liquid Glass polish.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweatherland.xtapp",

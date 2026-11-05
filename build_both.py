@@ -22,9 +22,9 @@ if os.path.exists(ls_file):
 port_manifest = {
     "app_id": "xtweather",
     "display_name": "XT Weather",
-    "version": "1.4.3",
+    "version": "1.4.6",
     "author": "Valblasp",
-    "description": "Liquid Glass weather forecast for Xteink X4 Pro (Open-Meteo).",
+    "description": "Liquid Glass weather forecast for Xteink X4 Pro (Open-Meteo). Enhanced fork of touch-licorice-apps by Omer Faruk Inel.",
     "entry": "index.lua",
     "api": "2.0",
     "permissions": ["net"]
@@ -43,9 +43,9 @@ print('[OK] Portrait build created:', port_out)
 land_manifest = {
     "app_id": "xtweatherland",
     "display_name": "XT Weather Land",
-    "version": "1.4.3",
+    "version": "1.4.6",
     "author": "Valblasp",
-    "description": "Liquid Glass weather forecast (Landscape) for Xteink X4 Pro (Open-Meteo).",
+    "description": "Liquid Glass weather forecast (Landscape) for Xteink X4 Pro (Open-Meteo). Enhanced fork of touch-licorice-apps by Omer Faruk Inel.",
     "entry": "index.lua",
     "api": "2.0",
     "display": {
