@@ -1,12 +1,17 @@
 {
   "app_id": "xtweather",
   "display_name": "XT Weather",
-  "version": "1.4.1.1",
-  "author": "Valblasp",
+  "version": "1.4.2",
   "description": "Liquid Glass weather forecast for Xteink X4 Pro (Open-Meteo). Enhanced fork of touch-licorice-apps by Omer Faruk Inel.",
+  "author": "Valblasp",
   "entry": "index.lua",
   "api": "2.0",
   "permissions": [
     "net"
-  ]
+  ],
+  "lockscreen": {
+    "enabled": true,
+    "entry": "lockscreen.lua",
+    "interval_sec": 3600
+  }
 }

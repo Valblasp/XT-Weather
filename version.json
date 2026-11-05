@@ -1,6 +1,6 @@
 {
-  "version": "1.4.1.1",
-  "notes": "Opaque modal sheets (no e-ink ghosting), attribution & heritage documentation, Liquid Glass polish.",
+  "version": "1.4.2",
+  "notes": "Lock screen / wallpaper support (hourly auto-refresh), text alignment improvements, City label in menu.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweatherland.xtapp",

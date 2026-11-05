@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.4.1.1-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.4.2-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
@@ -11,6 +11,30 @@ A clean, native weather forecast application for the **Xteink X4 Pro** e-reader 
 > **Note on Origins & Fork:** XT Weather originated as an enhanced fork of the open-source Weather mini-app from [touch-licorice-apps](https://github.com/omer-faruq-xteink/touch-licorice-apps) by **Omer Faruk Inel**. XT Weather extends the original with a complete **Liquid Glass** visual redesign, expanded 5-day / 12-hour forecasts, inline header layouts, an interactive options menu, and in-app OTA download updates.
 
 Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surfaces, large rounded numerals, refined typography scale, an opaque modal sheet and a floating glass toolbar.
+
+---
+
+## 🌙 What's New in v1.4.2
+
+### 🔒 Lock Screen / Wallpaper Support
+
+- XT Weather can now run as the **device lock screen / sleep wallpaper** via the XTOS Licorice lockscreen API.
+- When the device sleeps, it automatically shows current temperature, weather icon, 3-day outlook and a data-age footer.
+- The lock screen is a completely standalone script (no gamekit) that reads the same cached forecast written by the app.
+
+### ⏱️ Hourly Network Refresh
+
+- The lock screen and app now refresh weather data **once every hour** (reduced from 30 minutes) to preserve battery life.
+- Network is kept alive only for the duration of the request and released immediately after.
+
+### 🏙️ City Label in Menu
+
+- The **Place** button in the options menu has been renamed to **City** for clarity.
+
+### 🧭 Text Alignment Polish
+
+- Weather description, section headers ("Hourly", "5-Day Outlook") are now **centered** for a cleaner look.
+- Rain percentage in daily rows is **right-aligned** for consistent column layout in both portrait and landscape.
 
 ---
 

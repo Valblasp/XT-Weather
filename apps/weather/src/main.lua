@@ -6,10 +6,10 @@
 -- Data: Open-Meteo (free, no key) -> key=value cache file -> on-screen glance.
 
 local X = require('wx')
-local STALE_S = 30 * 60
-local UA = 'XT Weather/1.4.1.1 (https://github.com/Valblasp/XT-Weather)'
+local STALE_S = 60 * 60
+local UA = 'XT Weather/1.4.2 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.4.1.1'
+local APP_VERSION = '1.4.2'
 local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/version.json'
 local update_info = nil
 
@@ -207,10 +207,10 @@ local function open_menu()
   local unit_label = cfg.unit == 'C' and 'Switch to °F' or 'Switch to °C'
   kit.show({
     title = 'Menu',
-    lines = { 'Place: ' .. (cfg.name or 'not set'), 'Version ' .. APP_VERSION },
+    lines = { 'City: ' .. (cfg.name or 'not set'), 'Version ' .. APP_VERSION },
     cancel = function() kit.close() end,
     rows = {
-      { { 'Place', function() kit.close(); ask_place() end, true } },
+      { { 'City', function() kit.close(); ask_place() end, true } },
       { { unit_label, function()
           kit.close()
           cfg.unit = cfg.unit == 'C' and 'F' or 'C'
@@ -251,7 +251,7 @@ local function draw_main_portrait(gg)
   gg:line(0, 46, W, 46, { line_width = 1 })
 
   local kind, label = X.kind(fc.now_code)
-  gg:text(16, 56, label, { font = kit.font('large') })
+  gg:text(math.floor((W - kit.width(kit.font('large'), label)) / 2), 56, label, { font = kit.font('large') })
 
   -- big temperature + icon
   local temp = fc.now_t and tostring(fc.now_t) or '-'
@@ -265,7 +265,7 @@ local function draw_main_portrait(gg)
   gg:line(0, 234, W, 234, { line_width = 1 })
 
   -- Hourly forecast strip
-  gg:text(16, 244, 'Hourly', { font = kit.font('medium') })
+  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Hourly')) / 2), 244, 'Hourly', { font = kit.font('medium') })
   local col = W // 6
   for k = 1, 6 do
     local h = fc.hours[(k - 1) * 2 + 1]
@@ -280,14 +280,15 @@ local function draw_main_portrait(gg)
   gg:line(0, 388, W, 388, { line_width = 1 })
 
   -- 5-Day Outlook
-  gg:text(16, 398, '5-Day Outlook', { font = kit.font('medium') })
+  gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 398, '5-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
     local y = 422 + (k - 1) * 52
     gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
     X.icon(gg, X.kind(d.code), 110, y + 4, 42)
     gg:text(175, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-    gg:text(310, y + 16, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+    local rs = 'rain ' .. (d.rain or 0) .. '%'
+    gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 16, rs, { font = kit.font('small') })
     if k < 5 then gg:line(16, y + 52, W - 16, y + 52, { line_width = 1 }) end
   end
 end
@@ -323,7 +324,8 @@ local function draw_main_landscape(gg)
       gg:text(390, y + 6, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
       X.icon(gg, X.kind(d.code), 485, y, 32)
       gg:text(535, y + 6, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
-      gg:text(690, y + 8, 'rain ' .. (d.rain or 0) .. '%', { font = kit.font('small') })
+      local rs = 'rain ' .. (d.rain or 0) .. '%'
+      gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 8, rs, { font = kit.font('small') })
       if k < 4 then gg:line(390, y + 38, W - 16, y + 38, { line_width = 1 }) end
     end
   end
