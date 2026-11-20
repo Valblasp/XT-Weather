@@ -371,7 +371,7 @@ local STALE_S = 60 * 60
 local UA = 'XT Weather/1.5.1 (https://github.com/Valblasp/XT-Weather)'
 
 local APP_VERSION = '1.5.1'
-local UPDATE_URL = 'https://raw.githubusercontent.com/Valblasp/XT-Weather/main/version.json'
+local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
 local cfg = { name = nil, lat = nil, lon = nil, unit = 'C', lock = false }
@@ -432,13 +432,17 @@ end
 local function keep_wifi() pcall(function() ctx.net:keep_wifi(5 * 60 * 1000) end) end
 
 local pending = nil
-local function get(url, label, on_done)
+local function get(url, label, on_done, extra_headers)
   if pending then return end
   keep_wifi()
   busy_label, pending = label, { since = kit.now_ms() }
   local job = pending
   local ok, err = pcall(function()
-    ctx.net:request({ url = url, method = 'GET', headers = { ['User-Agent'] = UA }, timeout_ms = 30000 }, function(c, resp)
+    local headers = { ['User-Agent'] = UA }
+    if type(extra_headers) == 'table' then
+      for k, v in pairs(extra_headers) do headers[k] = v end
+    end
+    ctx.net:request({ url = url, method = 'GET', headers = headers, timeout_ms = 30000 }, function(c, resp)
       if pending ~= job then return end
       pending, busy_label = nil, nil
       local okh, e = pcall(function()
@@ -491,7 +495,7 @@ local function check_update(announce)
       update_info = nil
       if announce then status = 'Up to date (v' .. APP_VERSION .. ')' end
     end
-  end)
+  end, { ['Accept'] = 'application/vnd.github.raw+json' })
 end
 
 local function refresh_forecast()
