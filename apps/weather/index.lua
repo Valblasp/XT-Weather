@@ -754,7 +754,7 @@ end
 local function draw_main_portrait(gg)
   local W = L.w
   -- Clean header: city (left) + updated time (right)
-  local place_str = kit.short(fc.place, 22)
+  local place_str = kit.short(fc.place, 18)
   local upd_str = 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and ' (old)' or '')
   gg:text(16, 10, place_str, { font = kit.font('large') })
   gg:text(17, 10, place_str, { font = kit.font('large') })
@@ -771,7 +771,7 @@ local function draw_main_portrait(gg)
   X.icon(gg, kind, W - 136, 68, 114)
 
   -- single clean metrics line: feels like, humidity, wind
-  local metrics_str = 'Feels ' .. deg(fc.now_feel) .. '   Humidity ' .. (fc.now_hum or '-') .. '%   Wind ' .. (fc.now_wind or '-') .. ' km/h'
+  local metrics_str = 'Feels ' .. deg(fc.now_feel) .. '   Hum ' .. (fc.now_hum or '-') .. '%   Wind ' .. (fc.now_wind or '-') .. ' km/h'
   gg:text(16, 208, metrics_str, { font = kit.font('small') })
   gg:line(0, 234, W, 234, { line_width = 1 })
 
@@ -812,25 +812,25 @@ local function draw_main_portrait(gg)
   gg:line(0, dy - 8, W, dy - 8, { line_width = 1 })
   gg:text(math.floor((W - kit.width(kit.font('medium'), 'Details')) / 2), dy - 4, 'Details', { font = kit.font('medium') })
   -- left column
-  gg:text(16, dy + 10, 'UV', { font = kit.font('small') })
-  gg:text(16, dy + 22, uv and tostring(uv) or '-', { font = kit.font('medium') })
-  gg:text(16, dy + 38, 'Humidity', { font = kit.font('small') })
-  gg:text(16, dy + 50, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
-  gg:text(16, dy + 66, 'Sunrise', { font = kit.font('small') })
-  gg:text(16, dy + 78, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  gg:text(16, dy + 8, 'UV', { font = kit.font('small') })
+  gg:text(16, dy + 20, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(16, dy + 32, 'Humidity', { font = kit.font('small') })
+  gg:text(16, dy + 44, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(16, dy + 58, 'Sunrise', { font = kit.font('small') })
+  gg:text(16, dy + 70, sr ~= '' and sr or '-', { font = kit.font('medium') })
   -- center: moon
-  gg:text(math.floor((W - kit.width(kit.font('large'), '🌑')) / 2), dy + 14, '🌑', { font = kit.font('large') })
-  gg:text(math.floor((W - kit.width(kit.font('small'), 'Luna nueva')) / 2), dy + 52, 'Luna nueva', { font = kit.font('small') })
+  gg:text(math.floor((W - kit.width(kit.font('large'), '🌑')) / 2), dy + 10, '🌑', { font = kit.font('large') })
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'Luna nueva')) / 2), dy + 48, 'Luna nueva', { font = kit.font('small') })
   -- right column
   local rx = W - 16
   local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
   local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
-  rlabel('Wind', dy + 10)
-  rvalue((fc.now_wind or '-') .. ' km/h', dy + 22)
-  rlabel('Pressure', dy + 38)
-  rvalue('1013 hPa', dy + 50)
-  rlabel('Sunset', dy + 66)
-  rvalue(ss ~= '' and ss or '-', dy + 78)
+  rlabel('Wind', dy + 8)
+  rvalue((fc.now_wind or '-') .. ' km/h', dy + 20)
+  rlabel('Pressure', dy + 32)
+  rvalue('1013 hPa', dy + 44)
+  rlabel('Sunset', dy + 58)
+  rvalue(ss ~= '' and ss or '-', dy + 70)
 end
 
 local function draw_main_landscape(gg)
