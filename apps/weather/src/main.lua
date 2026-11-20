@@ -71,8 +71,21 @@ end
 local function keep_wifi() pcall(function() ctx.net:keep_wifi(5 * 60 * 1000) end) end
 
 local pending = nil
-local function get(url, label, on_done, extra_headers)
+local function resolve_url(base, loc)
+  if type(loc) ~= 'string' or loc == '' then return nil end
+  if loc:match('^https?://') then return loc end
+  -- relative: resolve against base
+  local scheme, host = base:match('^(https?://[^/]+)')
+  if not scheme then return nil end
+  if loc:sub(1, 1) == '/' then return scheme .. loc end
+  local dir = base:match('^(.*/)')
+  return (dir or scheme .. '/') .. loc
+end
+
+local function get(url, label, on_done, extra_headers, redirects)
+  redirects = redirects or 0
   if pending then return end
+  if redirects > 5 then on_done(nil, 'too many redirects'); return end
   keep_wifi()
   busy_label, pending = label, { since = kit.now_ms() }
   local job = pending
@@ -85,8 +98,23 @@ local function get(url, label, on_done, extra_headers)
       if pending ~= job then return end
       pending, busy_label = nil, nil
       local okh, e = pcall(function()
-        if type(resp) ~= 'table' or type(resp.body) ~= 'string' then on_done(nil, 'no answer'); return end
+        if type(resp) ~= 'table' then on_done(nil, 'no answer'); return end
         local code = tonumber(resp.status) or tonumber(resp.code)
+        -- follow redirects
+        if code and (code == 301 or code == 302 or code == 303 or code == 307 or code == 308) then
+          local loc = nil
+          if type(resp.headers) == 'table' then
+            loc = resp.headers['Location'] or resp.headers['location'] or resp.headers['LOCATION']
+          end
+          if type(loc) == 'string' and loc ~= '' then
+            local redir = resolve_url(url, loc)
+            if redir then
+              get(redir, label, on_done, extra_headers, redirects + 1)
+              return
+            end
+          end
+        end
+        if type(resp.body) ~= 'string' then on_done(nil, 'no answer'); return end
         if code and code >= 400 then on_done(nil, 'HTTP ' .. code); return end
         local okj, data = pcall(function() return ctx.json:decode(resp.body) end)
         on_done(okj and type(data) == 'table' and data or nil, nil, resp.body)
