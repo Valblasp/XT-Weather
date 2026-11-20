@@ -566,6 +566,7 @@ download_update = function()
   status = 'Downloading v' .. new_ver .. '...'
   kit.refresh()
 
+  -- GitHub API returns raw bytes when asked for the raw media type (no redirect, no CDN cache).
   get(target_url, 'Downloading update...', function(d, err, raw_body)
     if not raw_body or #raw_body < 1000 then
       status = 'Download failed: ' .. tostring(err or 'empty')
@@ -590,7 +591,7 @@ download_update = function()
       -- Fetch index.lua and write it too (best-effort auto-update of code)
       status = 'Applying update...'
       kit.refresh()
-      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/main/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+      get('https://api.github.com/repos/Valblasp/XT-Weather/contents/apps/weather/index.lua?ref=main', 'Applying update...', function(d2, err2, idx_body)
         local auto_ok = false
         if idx_body and #idx_body > 1000 then
           local okw2 = pcall(function()
@@ -624,11 +625,11 @@ download_update = function()
             rows = { { { 'OK', function() kit.close() end, true } } }
           })
         end
-      end)
+      end, { ['Accept'] = 'application/vnd.github.raw', ['Cache-Control'] = 'no-cache' })
     else
       status = 'Could not save file.'
     end
-  end)
+  end, { ['Accept'] = 'application/vnd.github.raw', ['Cache-Control'] = 'no-cache' })
 end
 
 local function find_place(q)
