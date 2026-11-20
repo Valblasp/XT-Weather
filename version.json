@@ -1,8 +1,8 @@
 {
   "version": "1.5.4",
-  "notes": "OTA downloads now use GitHub release assets (counted). Requires v1.5.3+ code for redirect following.",
-  "download_url": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.4/xtweather.xtapp",
+  "notes": "Robust update check via GitHub API; redirect-following download; best-effort auto-apply.",
+  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.4/xtweatherland.xtapp",
+  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }
