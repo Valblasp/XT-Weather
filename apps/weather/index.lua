@@ -590,7 +590,7 @@ download_update = function()
       -- Fetch index.lua and write it too (best-effort auto-update of code)
       status = 'Applying update...'
       kit.refresh()
-      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/22c3ceb2fb5a59fab60f07d13d11c84fe67f238a/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
         local auto_ok = false
         if idx_body and #idx_body > 1000 then
           local okw2 = pcall(function()
