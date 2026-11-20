@@ -601,7 +601,7 @@ download_update = function()
         else
           kit.show({
             title = 'Update downloaded',
-            lines = { fname .. ' saved to App Files.', 'Open All Files, tap it, then Install.' },
+            lines = { fname .. ' saved to App Files.', 'Delete /sdcard/XTApps/xtweather/ then install:', 'All Files -> ' .. fname .. ' -> Install.' },
             cancel = function() kit.close() end,
             rows = { { { 'OK', function() kit.close() end, true } } }
           })
