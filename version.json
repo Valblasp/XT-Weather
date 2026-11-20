@@ -1,8 +1,8 @@
 {
-  "version": "1.5.2",
-  "notes": "Update check now uses GitHub API (immune to CDN cache staleness).",
-  "download_url": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.2/xtweather.xtapp",
+  "version": "1.5.3",
+  "notes": "Auto-apply update: writes new code to app folder on download; restart to apply. Falls back to manual install if needed.",
+  "download_url": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.3/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.2/xtweatherland.xtapp",
+  "download_url_land": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.3/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }

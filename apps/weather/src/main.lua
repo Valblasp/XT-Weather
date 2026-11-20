@@ -7,9 +7,9 @@
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.2 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.3 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.2'
+local APP_VERSION = '1.5.3'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
@@ -153,8 +153,9 @@ download_update = function()
   if not update_info or not update_info.url then return end
   local target_url = update_info.url
   local fname = update_info.filename
+  local new_ver = update_info.version
   busy_label = 'Downloading update...'
-  status = 'Downloading v' .. update_info.version .. '...'
+  status = 'Downloading v' .. new_ver .. '...'
   kit.refresh()
 
   get(target_url, 'Downloading update...', function(d, err, raw_body)
@@ -172,12 +173,50 @@ download_update = function()
     if okw then
       busy_label = nil
       status = nil
-      kit.show({
-        title = 'Update downloaded',
-        lines = { fname .. ' saved to App Files.', 'Open All Files, tap it, then Install.' },
-        cancel = function() kit.close() end,
-        rows = { { { 'OK', function() kit.close() end, true } } }
-      })
+      -- Best-effort: write app.xtapp to the app folder so a restart may apply it
+      pcall(function()
+        if ctx.files and ctx.files.write then
+          ctx.files:write('/sdcard/XTApps/xtweather/app.xtapp', raw_body)
+        end
+      end)
+      -- Fetch index.lua and write it too (best-effort auto-update of code)
+      status = 'Applying update...'
+      kit.refresh()
+      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/main/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+        local auto_ok = false
+        if idx_body and #idx_body > 1000 then
+          local okw2 = pcall(function()
+            if ctx.files and ctx.files.write then
+              ctx.files:write('/sdcard/XTApps/xtweather/index.lua', idx_body)
+            end
+          end)
+          auto_ok = okw2
+        end
+        busy_label = nil
+        status = nil
+        update_info = nil
+        if auto_ok then
+          kit.show({
+            title = 'Update applied',
+            lines = {
+              'v' .. new_ver .. ' written to the app folder.',
+              'Restart the app to use the new version.',
+              '',
+              'If nothing changed, install manually:',
+              'All Files -> ' .. fname .. ' -> Install.'
+            },
+            cancel = function() kit.close() end,
+            rows = { { { 'OK', function() kit.close() end, true } } }
+          })
+        else
+          kit.show({
+            title = 'Update downloaded',
+            lines = { fname .. ' saved to App Files.', 'Open All Files, tap it, then Install.' },
+            cancel = function() kit.close() end,
+            rows = { { { 'OK', function() kit.close() end, true } } }
+          })
+        end
+      end)
     else
       status = 'Could not save file.'
     end
