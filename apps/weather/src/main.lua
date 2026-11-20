@@ -7,9 +7,9 @@
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.4 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.5 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.4'
+local APP_VERSION = '1.5.5'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
@@ -432,14 +432,43 @@ local function draw_main_portrait(gg)
   gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 398, '5-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
-    local y = 422 + (k - 1) * 52
+    local y = 422 + (k - 1) * 44
     gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, X.kind(d.code), 110, y + 4, 42)
-    gg:text(175, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    X.icon(gg, X.kind(d.code), 100, y + 4, 38)
+    gg:text(150, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
     local rs = 'rain ' .. (d.rain or 0) .. '%'
     gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 16, rs, { font = kit.font('small') })
-    if k < 5 then gg:line(16, y + 52, W - 16, y + 52, { line_width = 1 }) end
+    if k < 5 then gg:line(16, y + 44, W - 16, y + 44, { line_width = 1 }) end
   end
+
+  -- Details card: moon in center, info columns on sides
+  local d1 = fc.days[1] or {}
+  local uv = fc.now_uv
+  local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
+  local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
+  local dy = 608
+  gg:line(0, dy - 8, W, dy - 8, { line_width = 1 })
+  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Details')) / 2), dy - 4, 'Details', { font = kit.font('medium') })
+  -- left column
+  gg:text(16, dy + 10, 'UV', { font = kit.font('small') })
+  gg:text(16, dy + 22, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(16, dy + 38, 'Humidity', { font = kit.font('small') })
+  gg:text(16, dy + 50, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(16, dy + 66, 'Sunrise', { font = kit.font('small') })
+  gg:text(16, dy + 78, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  -- center: moon
+  gg:text(math.floor((W - kit.width(kit.font('large'), '🌑')) / 2), dy + 14, '🌑', { font = kit.font('large') })
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'Luna nueva')) / 2), dy + 52, 'Luna nueva', { font = kit.font('small') })
+  -- right column
+  local rx = W - 16
+  local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
+  local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
+  rlabel('Wind', dy + 10)
+  rvalue((fc.now_wind or '-') .. ' km/h', dy + 22)
+  rlabel('Pressure', dy + 38)
+  rvalue('1013 hPa', dy + 50)
+  rlabel('Sunset', dy + 66)
+  rvalue(ss ~= '' and ss or '-', dy + 78)
 end
 
 local function draw_main_landscape(gg)

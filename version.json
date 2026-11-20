@@ -1,6 +1,6 @@
 {
-  "version": "1.5.4",
-  "notes": "Robust update check via GitHub API; redirect-following download; best-effort auto-apply.",
+  "version": "1.5.5",
+  "notes": "New design: iPhone-style layout with details card (UV, humidity, wind, pressure, sunrise, sunset, moon in center).",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweatherland.xtapp",

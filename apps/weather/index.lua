@@ -186,9 +186,9 @@ end
 function X.forecast_url(lat, lon, unit)
   local q = {
     latitude = tostring(lat), longitude = tostring(lon),
-    current = 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m',
+    current = 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,uv_index',
     hourly = 'temperature_2m,precipitation_probability,weather_code',
-    daily = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+    daily = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset',
     forecast_days = '7', timezone = 'auto', wind_speed_unit = 'kmh'
   }
   if unit == 'F' then q.temperature_unit = 'fahrenheit' end
@@ -206,7 +206,7 @@ function X.cache_text(d, place, unit, now)
     'place=' .. tostring(place), 'unit=' .. tostring(unit), 'updated=' .. tostring(now),
     'now_t=' .. (rnd(c.temperature_2m) or ''), 'now_feel=' .. (rnd(c.apparent_temperature) or ''),
     'now_code=' .. tostring(c.weather_code or 0), 'now_hum=' .. (rnd(c.relative_humidity_2m) or ''),
-    'now_wind=' .. (rnd(c.wind_speed_10m) or '')
+    'now_wind=' .. (rnd(c.wind_speed_10m) or ''), 'now_uv=' .. (rnd(c.uv_index) or '')
   }
   local h = d.hourly or {}
   local times = h.time or {}
@@ -229,7 +229,8 @@ function X.cache_text(d, place, unit, now)
   for i, t in ipairs(dd.time or {}) do
     out[#out + 1] = 'd' .. (i - 1) .. '=' .. tostring(t) .. ';' .. tostring((dd.weather_code or {})[i] or 0) .. ';' ..
       (rnd((dd.temperature_2m_min or {})[i]) or '') .. ';' .. (rnd((dd.temperature_2m_max or {})[i]) or '') .. ';' ..
-      tostring((dd.precipitation_probability_max or {})[i] or '')
+      tostring((dd.precipitation_probability_max or {})[i] or '') .. ';' ..
+      tostring((dd.sunrise or {})[i] or '') .. ';' .. tostring((dd.sunset or {})[i] or '')
   end
   return table.concat(out, '\n')
 end
@@ -242,7 +243,7 @@ function X.parse_cache(text)
   local f = {
     place = t.place, unit = t.unit or 'C', updated = tonumber(t.updated),
     now_t = tonumber(t.now_t), now_feel = tonumber(t.now_feel), now_code = tonumber(t.now_code) or 0,
-    now_hum = tonumber(t.now_hum), now_wind = tonumber(t.now_wind), hours = {}, days = {}
+    now_hum = tonumber(t.now_hum), now_wind = tonumber(t.now_wind), now_uv = tonumber(t.now_uv), hours = {}, days = {}
   }
   for k = 0, 11 do
     local v = t['h' .. k]
@@ -254,8 +255,8 @@ function X.parse_cache(text)
   for k = 0, 6 do
     local v = t['d' .. k]
     if v then
-      local date, code, lo, hi, rain = v:match('^([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)$')
-      if date then f.days[#f.days + 1] = { date = date, code = tonumber(code) or 0, lo = tonumber(lo), hi = tonumber(hi), rain = tonumber(rain) } end
+      local date, code, lo, hi, rain, sr, ss = v:match('^([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)$')
+      if date then f.days[#f.days + 1] = { date = date, code = tonumber(code) or 0, lo = tonumber(lo), hi = tonumber(hi), rain = tonumber(rain), sunrise = sr, sunset = ss } end
     end
   end
   return f
@@ -368,9 +369,9 @@ end
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.4 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.5 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.4'
+local APP_VERSION = '1.5.5'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
@@ -793,14 +794,43 @@ local function draw_main_portrait(gg)
   gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 398, '5-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
-    local y = 422 + (k - 1) * 52
+    local y = 422 + (k - 1) * 44
     gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, X.kind(d.code), 110, y + 4, 42)
-    gg:text(175, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    X.icon(gg, X.kind(d.code), 100, y + 4, 38)
+    gg:text(150, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
     local rs = 'rain ' .. (d.rain or 0) .. '%'
     gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 16, rs, { font = kit.font('small') })
-    if k < 5 then gg:line(16, y + 52, W - 16, y + 52, { line_width = 1 }) end
+    if k < 5 then gg:line(16, y + 44, W - 16, y + 44, { line_width = 1 }) end
   end
+
+  -- Details card: moon in center, info columns on sides
+  local d1 = fc.days[1] or {}
+  local uv = fc.now_uv
+  local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
+  local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
+  local dy = 608
+  gg:line(0, dy - 8, W, dy - 8, { line_width = 1 })
+  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Details')) / 2), dy - 4, 'Details', { font = kit.font('medium') })
+  -- left column
+  gg:text(16, dy + 10, 'UV', { font = kit.font('small') })
+  gg:text(16, dy + 22, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(16, dy + 38, 'Humidity', { font = kit.font('small') })
+  gg:text(16, dy + 50, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(16, dy + 66, 'Sunrise', { font = kit.font('small') })
+  gg:text(16, dy + 78, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  -- center: moon
+  gg:text(math.floor((W - kit.width(kit.font('large'), '🌑')) / 2), dy + 14, '🌑', { font = kit.font('large') })
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'Luna nueva')) / 2), dy + 52, 'Luna nueva', { font = kit.font('small') })
+  -- right column
+  local rx = W - 16
+  local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
+  local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
+  rlabel('Wind', dy + 10)
+  rvalue((fc.now_wind or '-') .. ' km/h', dy + 22)
+  rlabel('Pressure', dy + 38)
+  rvalue('1013 hPa', dy + 50)
+  rlabel('Sunset', dy + 66)
+  rvalue(ss ~= '' and ss or '-', dy + 78)
 end
 
 local function draw_main_landscape(gg)

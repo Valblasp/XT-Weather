@@ -29,9 +29,9 @@ end
 function X.forecast_url(lat, lon, unit)
   local q = {
     latitude = tostring(lat), longitude = tostring(lon),
-    current = 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m',
+    current = 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,uv_index',
     hourly = 'temperature_2m,precipitation_probability,weather_code',
-    daily = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+    daily = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset',
     forecast_days = '7', timezone = 'auto', wind_speed_unit = 'kmh'
   }
   if unit == 'F' then q.temperature_unit = 'fahrenheit' end
@@ -49,7 +49,7 @@ function X.cache_text(d, place, unit, now)
     'place=' .. tostring(place), 'unit=' .. tostring(unit), 'updated=' .. tostring(now),
     'now_t=' .. (rnd(c.temperature_2m) or ''), 'now_feel=' .. (rnd(c.apparent_temperature) or ''),
     'now_code=' .. tostring(c.weather_code or 0), 'now_hum=' .. (rnd(c.relative_humidity_2m) or ''),
-    'now_wind=' .. (rnd(c.wind_speed_10m) or '')
+    'now_wind=' .. (rnd(c.wind_speed_10m) or ''), 'now_uv=' .. (rnd(c.uv_index) or '')
   }
   local h = d.hourly or {}
   local times = h.time or {}
@@ -72,7 +72,8 @@ function X.cache_text(d, place, unit, now)
   for i, t in ipairs(dd.time or {}) do
     out[#out + 1] = 'd' .. (i - 1) .. '=' .. tostring(t) .. ';' .. tostring((dd.weather_code or {})[i] or 0) .. ';' ..
       (rnd((dd.temperature_2m_min or {})[i]) or '') .. ';' .. (rnd((dd.temperature_2m_max or {})[i]) or '') .. ';' ..
-      tostring((dd.precipitation_probability_max or {})[i] or '')
+      tostring((dd.precipitation_probability_max or {})[i] or '') .. ';' ..
+      tostring((dd.sunrise or {})[i] or '') .. ';' .. tostring((dd.sunset or {})[i] or '')
   end
   return table.concat(out, '\n')
 end
@@ -85,7 +86,7 @@ function X.parse_cache(text)
   local f = {
     place = t.place, unit = t.unit or 'C', updated = tonumber(t.updated),
     now_t = tonumber(t.now_t), now_feel = tonumber(t.now_feel), now_code = tonumber(t.now_code) or 0,
-    now_hum = tonumber(t.now_hum), now_wind = tonumber(t.now_wind), hours = {}, days = {}
+    now_hum = tonumber(t.now_hum), now_wind = tonumber(t.now_wind), now_uv = tonumber(t.now_uv), hours = {}, days = {}
   }
   for k = 0, 11 do
     local v = t['h' .. k]
@@ -97,8 +98,8 @@ function X.parse_cache(text)
   for k = 0, 6 do
     local v = t['d' .. k]
     if v then
-      local date, code, lo, hi, rain = v:match('^([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)$')
-      if date then f.days[#f.days + 1] = { date = date, code = tonumber(code) or 0, lo = tonumber(lo), hi = tonumber(hi), rain = tonumber(rain) } end
+      local date, code, lo, hi, rain, sr, ss = v:match('^([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)$')
+      if date then f.days[#f.days + 1] = { date = date, code = tonumber(code) or 0, lo = tonumber(lo), hi = tonumber(hi), rain = tonumber(rain), sunrise = sr, sunset = ss } end
     end
   end
   return f
@@ -210,7 +211,7 @@ end)()
 
 local W, H = 480, 800
 local STALE_S = 60 * 60   -- 1 hour: refresh threshold
-local UA = 'XT Weather/1.5.4 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.5 (https://github.com/Valblasp/XT-Weather)'
 local asked_at = nil
 
 -- Storage helpers (ctx.storage, no kit available here)
