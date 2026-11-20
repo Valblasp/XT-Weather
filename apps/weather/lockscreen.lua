@@ -229,7 +229,7 @@ end)()
 
 local W, H = 480, 800
 local STALE_S = 60 * 60   -- 1 hour: refresh threshold
-local UA = 'XT Weather/1.5.6.1 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.2 (https://github.com/Valblasp/XT-Weather)'
 local asked_at = nil
 
 -- Storage helpers (ctx.storage, no kit available here)
@@ -310,7 +310,7 @@ function on_draw(c, gg)
 
     local fc = X.parse_cache(read('forecast.txt'))
     if not fc then
-      g:text(24 + ox, 380 + oy, 'XT Weather: open the app once to set a city.', { font = font('medium') })
+      g:text(24 + ox, H / 2 + oy, 'XT Weather: open the app once to set a city.', { font = font('medium') })
       return
     end
 
@@ -318,54 +318,98 @@ function on_draw(c, gg)
     local age = now_sec() - (fc.updated or 0)
     if age > STALE_S then try_refresh(fc) end
 
-    -- City name (bold effect: draw twice offset by 1px)
+    local is_land = W > H
     local place_str = tostring(fc.place)
-    g:text(24 + ox, 24 + oy, place_str, { font = font('large') })
-    g:text(25 + ox, 24 + oy, place_str, { font = font('large') })
-
-    -- Big temperature (seven-segment) + unit
     local temp = fc.now_t and tostring(fc.now_t) or '-'
-    local bx = X.big_number(g, temp, 24 + ox, 90 + oy, 150)
-    g:text(bx + 4, 86 + oy, '°' .. fc.unit, { font = font('large') })
-
-    -- Weather icon (right side)
     local kind, text = X.kind(fc.now_code)
-    X.icon(g, kind, W - 190 + ox, 80 + oy, 170)
-
-    -- Weather description
-    g:text(24 + ox, 262 + oy, text, { font = font('large') })
-
-    -- Single metrics line: feels / humidity / wind
+    local d1 = fc.days[1] or {}
+    local uv = fc.now_uv
+    local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
+    local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
     local metrics = 'Feels ' .. deg(fc.now_feel) ..
                     '   Hum ' .. (fc.now_hum or '-') .. '%' ..
                     '   Wind ' .. (fc.now_wind or '-') .. ' km/h'
-    g:text(24 + ox, 300 + oy, metrics, { font = font('small') })
-    g:line(24 + ox, 334 + oy, W - 24 + ox, 334 + oy)
-
-    -- Today summary
-    local d1 = fc.days[1]
-    if d1 then
-      g:text(24 + ox, 354 + oy,
-        'Today ' .. deg(d1.lo) .. ' / ' .. deg(d1.hi) ..
-        '   rain ' .. (d1.rain or 0) .. '%',
-        { font = font('medium') })
-    end
-    g:line(24 + ox, 388 + oy, W - 24 + ox, 388 + oy)
-
-    -- Next 3 days
-    for k = 2, math.min(4, #fc.days) do
-      local d = fc.days[k]
-      local ry = 408 + (k - 2) * 100 + oy
-      g:text(24 + ox, ry + 28, X.weekday(d.date), { font = font('large') })
-      X.icon(g, (X.kind(d.code)), 150 + ox, ry, 80)
-      g:text(260 + ox, ry + 28, deg(d.lo) .. ' / ' .. deg(d.hi), { font = font('large') })
-      g:text(260 + ox, ry + 60, 'rain ' .. (d.rain or 0) .. '%', { font = font('small') })
-    end
-
-    -- Footer: data age
     local mins = age // 60
     local age_str = mins < 90 and ('updated ' .. mins .. ' min ago') or ('updated ' .. (mins // 60) .. ' h ago')
-    g:text(24 + ox, H - 36 + oy, age_str, { font = font('small') })
+
+    if not is_land then
+      -- Portrait: header, current, 3 days, then the full Details card.
+      g:text(24 + ox, 18 + oy, place_str, { font = font('large') })
+      g:text(25 + ox, 18 + oy, place_str, { font = font('large') })
+      local bx = X.big_number(g, temp, 24 + ox, 58 + oy, 120)
+      g:text(bx + 4, 60 + oy, '°' .. fc.unit, { font = font('large') })
+      X.icon(g, kind, W - 170 + ox, 54 + oy, 140)
+      g:text(24 + ox, 184 + oy, text, { font = font('large') })
+      g:text(24 + ox, 220 + oy, metrics, { font = font('small') })
+      g:line(24 + ox, 246 + oy, W - 24 + ox, 246 + oy)
+      g:text(24 + ox, 254 + oy,
+        'Today ' .. deg(d1.lo) .. ' / ' .. deg(d1.hi) ..
+        '   rain ' .. (d1.rain or 0) .. '%', { font = font('medium') })
+      g:line(24 + ox, 284 + oy, W - 24 + ox, 284 + oy)
+      for k = 2, math.min(4, #fc.days) do
+        local d = fc.days[k]
+        local ry = 292 + (k - 2) * 64 + oy
+        g:text(24 + ox, ry + 4, X.weekday(d.date), { font = font('large') })
+        X.icon(g, X.kind(d.code), 150 + ox, ry + 2, 52)
+        g:text(250 + ox, ry + 4, deg(d.lo) .. ' / ' .. deg(d.hi), { font = font('large') })
+        g:text(250 + ox, ry + 36, 'rain ' .. (d.rain or 0) .. '%', { font = font('small') })
+        g:line(24 + ox, ry + 62, W - 24 + ox, ry + 62)
+      end
+      g:line(24 + ox, 492 + oy, W - 24 + ox, 492 + oy)
+      g:text(24 + ox, 496 + oy, 'Details', { font = font('small') })
+      local ly = 520 + oy
+      g:text(24 + ox, ly, 'UV', { font = font('small') })
+      g:text(24 + ox, ly + 18, uv and tostring(uv) or '-', { font = font('medium') })
+      g:text(24 + ox, ly + 40, 'Humidity', { font = font('small') })
+      g:text(24 + ox, ly + 58, (fc.now_hum or '-') .. '%', { font = font('medium') })
+      g:text(24 + ox, ly + 80, 'Sunrise', { font = font('small') })
+      g:text(24 + ox, ly + 98, sr ~= '' and sr or '-', { font = font('medium') })
+      local rx = 250 + ox
+      g:text(rx, ly, 'Wind', { font = font('small') })
+      g:text(rx, ly + 18, (fc.now_wind or '-') .. ' km/h', { font = font('medium') })
+      g:text(rx, ly + 40, 'Pressure', { font = font('small') })
+      g:text(rx, ly + 58, '1013 hPa', { font = font('medium') })
+      g:text(rx, ly + 80, 'Sunset', { font = font('small') })
+      g:text(rx, ly + 98, ss ~= '' and ss or '-', { font = font('medium') })
+      X.moon(g, W - 70 + ox, ly + 44, 26)
+      g:text(W - 130 + ox, ly + 80, 'New Moon', { font = font('small') })
+      g:text(24 + ox, H - 30 + oy, age_str, { font = font('small') })
+    else
+      -- Landscape: current at top-left, 4-day rows, compact Details strip.
+      g:text(24 + ox, 12 + oy, place_str, { font = font('large') })
+      g:text(25 + ox, 12 + oy, place_str, { font = font('large') })
+      local bx = X.big_number(g, temp, 24 + ox, 46 + oy, 76)
+      g:text(bx + 4, 48 + oy, '°' .. fc.unit, { font = font('large') })
+      X.icon(g, kind, W - 170 + ox, 36 + oy, 110)
+      g:text(300 + ox, 48 + oy, text, { font = font('large') })
+      g:text(300 + ox, 88 + oy, metrics, { font = font('small') })
+      g:line(24 + ox, 136 + oy, W - 24 + ox, 136 + oy)
+      g:text(24 + ox, 144 + oy,
+        'Today ' .. deg(d1.lo) .. ' / ' .. deg(d1.hi) ..
+        '   rain ' .. (d1.rain or 0) .. '%', { font = font('medium') })
+      for k = 2, math.min(5, #fc.days) do
+        local d = fc.days[k]
+        local ry = 176 + (k - 2) * 36 + oy
+        g:text(24 + ox, ry + 4, X.weekday(d.date), { font = font('medium') })
+        X.icon(g, X.kind(d.code), 130 + ox, ry + 2, 28)
+        g:text(172 + ox, ry + 4, deg(d.lo) .. ' / ' .. deg(d.hi), { font = font('medium') })
+        g:text(320 + ox, ry + 6, 'rain ' .. (d.rain or 0) .. '%', { font = font('small') })
+        g:line(24 + ox, ry + 34, W - 24 + ox, ry + 34)
+      end
+      local dy = 326 + oy
+      g:line(24 + ox, dy, W - 24 + ox, dy)
+      g:text(24 + ox, dy + 4, 'Details', { font = font('small') })
+      local line1 = 'UV ' .. (uv and tostring(uv) or '-') ..
+                    '     Humidity ' .. (fc.now_hum or '-') .. '%' ..
+                    '     Sunrise ' .. (sr ~= '' and sr or '-')
+      local line2 = 'Wind ' .. (fc.now_wind or '-') .. ' km/h' ..
+                    '     Pressure 1013 hPa' ..
+                    '     Sunset ' .. (ss ~= '' and ss or '-')
+      g:text(24 + ox, dy + 26, line1, { font = font('small') })
+      g:text(24 + ox, dy + 48, line2, { font = font('small') })
+      X.moon(g, W - 50 + ox, dy + 38, 14)
+      g:text(24 + ox, H - 22 + oy, age_str, { font = font('small') })
+    end
   end)
   if not ok then
     pcall(function()

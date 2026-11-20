@@ -387,13 +387,14 @@ end
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.6.1 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.2 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.6.1'
+local APP_VERSION = '1.5.6.2'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
-local cfg = { name = nil, lat = nil, lon = nil, unit = 'C', lock = false }
+-- Default city: Barcelona, Catalunya. Used until the user saves another place.
+local cfg = { name = 'Barcelona, Catalunya', lat = 41.3874, lon = 2.1686, unit = 'C', lock = false }
 local fc = nil                  -- parsed forecast cache (X.parse_cache)
 local screen = 'main'           -- main | places
 local places = {}
@@ -439,8 +440,10 @@ end
 
 local function load_cfg()
   local t = kit.kv(kit.read('settings.txt'))
-  cfg.name = (t.name and t.name ~= '') and t.name or nil
-  cfg.lat, cfg.lon = tonumber(t.lat), tonumber(t.lon)
+  -- Keep the Barcelona defaults whenever there is no saved place yet.
+  if t.name and t.name ~= '' then cfg.name = t.name end
+  local lat, lon = tonumber(t.lat), tonumber(t.lon)
+  if lat and lon then cfg.lat, cfg.lon = lat, lon end
   cfg.unit = t.unit == 'F' and 'F' or 'C'
   cfg.lock = (t.lock == 'true')
   fc = X.parse_cache(kit.read('forecast.txt'))
@@ -590,7 +593,7 @@ download_update = function()
       -- Fetch index.lua and write it too (best-effort auto-update of code)
       status = 'Applying update...'
       kit.refresh()
-      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1-r2/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.2/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
         local auto_ok = false
         if idx_body and #idx_body > 1000 then
           local okw2 = pcall(function()
@@ -723,6 +726,28 @@ local function open_menu()
   local unit_label = cfg.unit == 'C' and 'Switch to °F' or 'Switch to °C'
   local lock_on = is_lock()
   local lock_label = lock_on and 'Lock screen: ON (Disable)' or 'Set as Lock Screen'
+  local rows = {
+    {
+      { 'Refresh forecast', function() kit.close(); refresh_forecast() end, true },
+      { 'City', function() kit.close(); ask_place() end, true }
+    },
+    {
+      { unit_label, function()
+          kit.close()
+          cfg.unit = cfg.unit == 'C' and 'F' or 'C'
+          save_cfg()
+          refresh_forecast()
+        end, true },
+      { lock_label, function() kit.close(); toggle_lock() end, true }
+    },
+    {
+      { 'Check updates', function() kit.close(); check_update(true) end, true },
+      { 'Close', function() kit.close() end, true }
+    }
+  }
+  if update_info then
+    table.insert(rows, 3, { { 'Download v' .. update_info.version, function() kit.close(); download_update() end, true } })
+  end
   kit.show({
     title = 'XT Weather Menu',
     lines = {
@@ -731,24 +756,7 @@ local function open_menu()
       'Version ' .. APP_VERSION
     },
     cancel = function() kit.close() end,
-    rows = {
-      {
-        { 'City', function() kit.close(); ask_place() end, true },
-        { unit_label, function()
-            kit.close()
-            cfg.unit = cfg.unit == 'C' and 'F' or 'C'
-            save_cfg()
-            refresh_forecast()
-          end, true }
-      },
-      {
-        { lock_label, function() kit.close(); toggle_lock() end, true }
-      },
-      {
-        { 'Check updates', function() kit.close(); check_update(true) end, true },
-        { 'Close', function() kit.close() end, true }
-      }
-    }
+    rows = rows
   })
 end
 
@@ -771,86 +779,83 @@ end
 
 local function draw_main_portrait(gg)
   local W = L.w
-  -- Clean header: city (left) + updated time (right)
+  -- Header (0..44)
   local place_str = kit.short(fc.place, 18)
   local upd_str = 'updated ' .. hhmm(fc.updated) .. (now_sec() - (fc.updated or 0) > STALE_S and ' (old)' or '')
-  gg:text(16, 10, place_str, { font = kit.font('large') })
-  gg:text(17, 10, place_str, { font = kit.font('large') })
-  gg:text(W - kit.width(kit.font('small'), upd_str) - 16, 18, upd_str, { font = kit.font('small') })
-  gg:line(0, 46, W, 46, { line_width = 1 })
+  gg:text(16, 8, place_str, { font = kit.font('large') })
+  gg:text(17, 8, place_str, { font = kit.font('large') })
+  gg:text(W - kit.width(kit.font('small'), upd_str) - 16, 16, upd_str, { font = kit.font('small') })
+  gg:line(0, 44, W, 44, { line_width = 1 })
 
   local kind, label = X.kind(fc.now_code)
-  gg:text(math.floor((W - kit.width(kit.font('large'), label)) / 2), 56, label, { font = kit.font('large') })
+  gg:text(math.floor((W - kit.width(kit.font('large'), label)) / 2), 50, label, { font = kit.font('large') })
 
-  -- big temperature + icon
+  -- Big temperature + icon (44..200)
   local temp = fc.now_t and tostring(fc.now_t) or '-'
-  local bx = X.big_number(gg, temp, 20, 84, 110)
-  gg:text(bx + 4, 84, '°' .. fc.unit, { font = kit.font('large') })
-  X.icon(gg, kind, W - 136, 68, 114)
+  local bx = X.big_number(gg, temp, 20, 80, 88)
+  gg:text(bx + 4, 82, '°' .. fc.unit, { font = kit.font('large') })
+  X.icon(gg, kind, W - 116, 66, 96)
 
-  -- single clean metrics line: feels like, humidity, wind
   local metrics_str = 'Feels ' .. deg(fc.now_feel) .. '   Hum ' .. (fc.now_hum or '-') .. '%   Wind ' .. (fc.now_wind or '-') .. ' km/h'
-  gg:text(16, 208, metrics_str, { font = kit.font('small') })
-  gg:line(0, 234, W, 234, { line_width = 1 })
+  gg:text(16, 174, metrics_str, { font = kit.font('small') })
+  gg:line(0, 200, W, 200, { line_width = 1 })
 
-  -- Hourly forecast strip
-  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Hourly')) / 2), 244, 'Hourly', { font = kit.font('medium') })
+  -- Hourly strip (200..336)
+  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Hourly')) / 2), 208, 'Hourly', { font = kit.font('medium') })
   local col = W // 6
   for k = 1, 6 do
     local h = fc.hours[(k - 1) * 2 + 1]
     if h then
       local cx = (k - 1) * col
-      gg:text(cx + 8, 268, h.time, { font = kit.font('small') })
-      X.icon(gg, X.kind(h.code), cx + 12, 290, 40)
-      gg:text(cx + 10, 336, deg(h.temp), { font = kit.font('medium') })
-      gg:text(cx + 10, 362, (h.rain or 0) .. '%', { font = kit.font('small') })
+      gg:text(cx + 8, 232, h.time, { font = kit.font('small') })
+      X.icon(gg, X.kind(h.code), cx + 12, 252, 30)
+      gg:text(cx + 10, 284, deg(h.temp), { font = kit.font('medium') })
+      gg:text(cx + 10, 310, (h.rain or 0) .. '%', { font = kit.font('small') })
     end
   end
-  gg:line(0, 388, W, 388, { line_width = 1 })
+  gg:line(0, 334, W, 334, { line_width = 1 })
 
-  -- 5-Day Outlook
-  gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 398, '5-Day Outlook', { font = kit.font('medium') })
+  -- 5-Day Outlook (334..532): 31px pitch leaves 7px clear below each 24px line
+  gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 342, '5-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
-    local y = 422 + (k - 1) * 36
-    gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, X.kind(d.code), 100, y + 2, 34)
-    gg:text(150, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
+    local y = 370 + (k - 1) * 31
+    gg:text(16, y + 4, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
+    X.icon(gg, X.kind(d.code), 100, y + 1, 28)
+    gg:text(146, y + 4, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
     local rs = 'rain ' .. (d.rain or 0) .. '%'
-    gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 16, rs, { font = kit.font('small') })
-    if k < 5 then gg:line(16, y + 36, W - 16, y + 36, { line_width = 1 }) end
+    gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 6, rs, { font = kit.font('small') })
+    if k < 5 then gg:line(16, y + 31, W - 16, y + 31, { line_width = 1 }) end
   end
 
-  -- Details card: moon in center, info columns on sides.
-  -- Row pitch must exceed line height (small=20, medium=24) or text overlaps.
+  -- Details card (532..682): status line sits at 692, buttons start at 722.
   local d1 = fc.days[1] or {}
   local uv = fc.now_uv
   local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
   local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
-  local dy = 606
+  local dy = 532
   gg:line(0, dy, W, dy, { line_width = 1 })
   gg:text(math.floor((W - kit.width(kit.font('small'), 'Details')) / 2), dy + 4, 'Details', { font = kit.font('small') })
-  local ly = dy + 32
-  -- left column: label then value, 20px apart; rows 48px apart
+  local ly = dy + 28
+  -- label/value pairs: 18px apart, rows 40px apart
   gg:text(16, ly, 'UV', { font = kit.font('small') })
-  gg:text(16, ly + 20, uv and tostring(uv) or '-', { font = kit.font('medium') })
-  gg:text(16, ly + 48, 'Humidity', { font = kit.font('small') })
-  gg:text(16, ly + 68, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
-  gg:text(16, ly + 96, 'Sunrise', { font = kit.font('small') })
-  gg:text(16, ly + 116, sr ~= '' and sr or '-', { font = kit.font('medium') })
-  -- center: drawn crescent moon (device font has no moon emoji)
-  X.moon(gg, math.floor(W / 2), dy + 84, 30)
-  gg:text(math.floor((W - kit.width(kit.font('small'), 'New Moon')) / 2), dy + 124, 'New Moon', { font = kit.font('small') })
-  -- right column
+  gg:text(16, ly + 18, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(16, ly + 40, 'Humidity', { font = kit.font('small') })
+  gg:text(16, ly + 58, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(16, ly + 80, 'Sunrise', { font = kit.font('small') })
+  gg:text(16, ly + 98, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  -- drawn crescent moon (device font has no moon codepoint)
+  X.moon(gg, math.floor(W / 2), ly + 42, 24)
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'New Moon')) / 2), ly + 70, 'New Moon', { font = kit.font('small') })
   local rx = W - 16
   local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
   local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
   rlabel('Wind', ly)
-  rvalue((fc.now_wind or '-') .. ' km/h', ly + 20)
-  rlabel('Pressure', ly + 48)
-  rvalue('1013 hPa', ly + 68)
-  rlabel('Sunset', ly + 96)
-  rvalue(ss ~= '' and ss or '-', ly + 116)
+  rvalue((fc.now_wind or '-') .. ' km/h', ly + 18)
+  rlabel('Pressure', ly + 40)
+  rvalue('1013 hPa', ly + 58)
+  rlabel('Sunset', ly + 80)
+  rvalue(ss ~= '' and ss or '-', ly + 98)
 end
 
 local function draw_main_landscape(gg)
@@ -904,6 +909,20 @@ local function draw_main_landscape(gg)
     end
   end
   gg:line(0, 342, W, 342, { line_width = 1 })
+
+  -- Details strip (342..390); status line sits at 394, buttons start at 418.
+  local d1 = fc.days[1] or {}
+  local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
+  local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
+  local line1 = 'UV ' .. (fc.now_uv and tostring(fc.now_uv) or '-') ..
+                '     Humidity ' .. (fc.now_hum or '-') .. '%' ..
+                '     Sunrise ' .. (sr ~= '' and sr or '-')
+  local line2 = 'Wind ' .. (fc.now_wind or '-') .. ' km/h' ..
+                '     Pressure 1013 hPa' ..
+                '     Sunset ' .. (ss ~= '' and ss or '-')
+  gg:text(16, 348, line1, { font = kit.font('small') })
+  gg:text(16, 370, line2, { font = kit.font('small') })
+  X.moon(gg, W - 36, 359, 14)
 end
 
 local function draw_main(gg)
@@ -951,11 +970,15 @@ end
 
 local function buttons()
   if screen == 'places' then return { 'Back', 'Search again' } end
-  if update_info then return { 'Update', 'Refresh', 'Menu' } end
-  return { 'Refresh', 'Menu' }
+  -- One compact centered button; Refresh and update download live in the menu.
+  return { 'Menu' }
 end
 
 local function button_rect(k, n)
+  if n == 1 and screen ~= 'places' then
+    local bw = 132
+    return math.floor((L.w - bw) / 2), L.bar_y, bw, L.bar_h
+  end
   local bw = math.floor((L.w - 24 - (n - 1) * 8) / n)
   return 12 + (k - 1) * (bw + 8), L.bar_y, bw, L.bar_h
 end
