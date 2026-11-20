@@ -162,7 +162,7 @@ local function check_update(announce)
       update_info = nil
       if announce then status = 'Up to date (v' .. APP_VERSION .. ')' end
     end
-  end, { ['Accept'] = 'application/vnd.github.raw+json' })
+  end, { ['Accept'] = 'application/vnd.github.raw+json', ['Cache-Control'] = 'no-cache' })
 end
 
 local function refresh_forecast()
