@@ -794,13 +794,13 @@ local function draw_main_portrait(gg)
   gg:text(math.floor((W - kit.width(kit.font('medium'), '5-Day Outlook')) / 2), 398, '5-Day Outlook', { font = kit.font('medium') })
   for k, d in ipairs(fc.days) do
     if k > 5 then break end
-    local y = 422 + (k - 1) * 44
+    local y = 422 + (k - 1) * 36
     gg:text(16, y + 14, k == 1 and 'Today' or X.weekday(d.date), { font = kit.font('medium') })
-    X.icon(gg, X.kind(d.code), 100, y + 4, 38)
+    X.icon(gg, X.kind(d.code), 100, y + 2, 34)
     gg:text(150, y + 14, deg(d.lo) .. ' / ' .. deg(d.hi), { font = kit.font('medium') })
     local rs = 'rain ' .. (d.rain or 0) .. '%'
     gg:text(W - 16 - kit.width(kit.font('small'), rs), y + 16, rs, { font = kit.font('small') })
-    if k < 5 then gg:line(16, y + 44, W - 16, y + 44, { line_width = 1 }) end
+    if k < 5 then gg:line(16, y + 36, W - 16, y + 36, { line_width = 1 }) end
   end
 
   -- Details card: moon in center, info columns on sides
