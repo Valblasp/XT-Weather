@@ -50,5 +50,7 @@ jobs:
         files: |
           xtweather.xtapp
           xtweatherland.xtapp
+        fail_on_unmatched_files: false
+        overwrite_files: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
