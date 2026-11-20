@@ -16,8 +16,9 @@ Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surf
 
 ## 🌈 What's New in v1.5
 
-### 🎨 Brand New App Icon: Cloud & Rainbow
-- Replaced the placeholder icon with a brand new, handcrafted **cloud and rainbow** vector glyph.
+### ☀️ Brand New App Icon: Bold Sun
+
+- Replaced the placeholder icon with a brand new, handcrafted **full-bleed bold sun** glyph.
 - Optimized specifically for the 1-bpp e-ink display on the Xteink X4 Pro Ink App grid.
 
 ### 🔒 In-App Lock Screen Controls
