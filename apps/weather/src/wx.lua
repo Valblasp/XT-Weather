@@ -168,6 +168,24 @@ function X.icon(gg, kind, x, y, s)
   end
 end
 
+-- Moon glyph drawn with primitives (no emoji: device font has no moon codepoint).
+-- A crescent: outer ring minus an offset inner disc, plus a few craters.
+function X.moon(gg, cx, cy, rad)
+  circle(gg, cx, cy, rad)
+  circle(gg, cx, cy, rad - 1)
+  -- crescent: shade the right side with short horizontal strokes
+  for k = -rad + 3, rad - 3, 3 do
+    local half = math.floor(math.sqrt(math.max(0, rad * rad - k * k)))
+    local inset = math.floor(rad * 0.45)
+    if half > inset then
+      gg:line(math.floor(cx + inset), math.floor(cy + k), math.floor(cx + half), math.floor(cy + k))
+    end
+  end
+  -- craters on the lit side
+  circle(gg, math.floor(cx - rad * 0.35), math.floor(cy - rad * 0.25), math.max(1, rad // 6))
+  circle(gg, math.floor(cx - rad * 0.2), math.floor(cy + rad * 0.3), math.max(1, rad // 8))
+end
+
 -- Seven-segment rendering of a (possibly signed) integer string: digit height h, thickness t.
 local SEG = { ['0'] = 'abcdef', ['1'] = 'bc', ['2'] = 'abged', ['3'] = 'abgcd', ['4'] = 'fgbc', ['5'] = 'afgcd',
              ['6'] = 'afgedc', ['7'] = 'abc', ['8'] = 'abcdefg', ['9'] = 'abcdfg', ['-'] = 'g' }

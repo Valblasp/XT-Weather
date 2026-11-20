@@ -441,34 +441,36 @@ local function draw_main_portrait(gg)
     if k < 5 then gg:line(16, y + 36, W - 16, y + 36, { line_width = 1 }) end
   end
 
-  -- Details card: moon in center, info columns on sides
+  -- Details card: moon in center, info columns on sides.
+  -- Row pitch must exceed line height (small=20, medium=24) or text overlaps.
   local d1 = fc.days[1] or {}
   local uv = fc.now_uv
   local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
   local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
-  local dy = 608
-  gg:line(0, dy - 8, W, dy - 8, { line_width = 1 })
-  gg:text(math.floor((W - kit.width(kit.font('medium'), 'Details')) / 2), dy - 4, 'Details', { font = kit.font('medium') })
-  -- left column
-  gg:text(16, dy + 8, 'UV', { font = kit.font('small') })
-  gg:text(16, dy + 20, uv and tostring(uv) or '-', { font = kit.font('medium') })
-  gg:text(16, dy + 32, 'Humidity', { font = kit.font('small') })
-  gg:text(16, dy + 44, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
-  gg:text(16, dy + 58, 'Sunrise', { font = kit.font('small') })
-  gg:text(16, dy + 70, sr ~= '' and sr or '-', { font = kit.font('medium') })
-  -- center: moon
-  gg:text(math.floor((W - kit.width(kit.font('large'), '🌑')) / 2), dy + 10, '🌑', { font = kit.font('large') })
-  gg:text(math.floor((W - kit.width(kit.font('small'), 'Luna nueva')) / 2), dy + 48, 'Luna nueva', { font = kit.font('small') })
+  local dy = 606
+  gg:line(0, dy, W, dy, { line_width = 1 })
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'Details')) / 2), dy + 4, 'Details', { font = kit.font('small') })
+  local ly = dy + 32
+  -- left column: label then value, 20px apart; rows 48px apart
+  gg:text(16, ly, 'UV', { font = kit.font('small') })
+  gg:text(16, ly + 20, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(16, ly + 48, 'Humidity', { font = kit.font('small') })
+  gg:text(16, ly + 68, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(16, ly + 96, 'Sunrise', { font = kit.font('small') })
+  gg:text(16, ly + 116, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  -- center: drawn crescent moon (device font has no moon emoji)
+  X.moon(gg, math.floor(W / 2), dy + 84, 30)
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'New Moon')) / 2), dy + 124, 'New Moon', { font = kit.font('small') })
   -- right column
   local rx = W - 16
   local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
   local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
-  rlabel('Wind', dy + 8)
-  rvalue((fc.now_wind or '-') .. ' km/h', dy + 20)
-  rlabel('Pressure', dy + 32)
-  rvalue('1013 hPa', dy + 44)
-  rlabel('Sunset', dy + 58)
-  rvalue(ss ~= '' and ss or '-', dy + 70)
+  rlabel('Wind', ly)
+  rvalue((fc.now_wind or '-') .. ' km/h', ly + 20)
+  rlabel('Pressure', ly + 48)
+  rvalue('1013 hPa', ly + 68)
+  rlabel('Sunset', ly + 96)
+  rvalue(ss ~= '' and ss or '-', ly + 116)
 end
 
 local function draw_main_landscape(gg)
