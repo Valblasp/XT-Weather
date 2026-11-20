@@ -7,9 +7,9 @@
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.6.2 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.3 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.6.2'
+local APP_VERSION = '1.5.6.3'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
@@ -213,7 +213,7 @@ download_update = function()
       -- Fetch index.lua and write it too (best-effort auto-update of code)
       status = 'Applying update...'
       kit.refresh()
-      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.2/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
         local auto_ok = false
         if idx_body and #idx_body > 1000 then
           local okw2 = pcall(function()
@@ -596,8 +596,9 @@ end
 
 local function button_rect(k, n)
   if n == 1 and screen ~= 'places' then
-    local bw = 132
-    return math.floor((L.w - bw) / 2), L.bar_y, bw, L.bar_h
+    -- Single small centered rectangle; no full-width bar around it.
+    local bw, bh = 132, 44
+    return math.floor((L.w - bw) / 2), L.bar_y + math.floor((L.bar_h - bh) / 2), bw, bh
   end
   local bw = math.floor((L.w - 24 - (n - 1) * 8) / n)
   return 12 + (k - 1) * (bw + 8), L.bar_y, bw, L.bar_h
@@ -616,7 +617,6 @@ function on_draw(c, gg)
       gg:text(12, ly, kit.short(tostring(line), L.is_land and 80 or 48), { font = kit.font('small') })
     end
     local bs = buttons()
-    draw_glass_bar(gg)
     for k, b in ipairs(bs) do
       local x, y, bw, bh = button_rect(k, #bs)
       draw_button(gg, x, y, bw, bh, b)

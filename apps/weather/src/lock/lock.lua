@@ -6,7 +6,7 @@
 
 local W, H = 480, 800
 local STALE_S = 60 * 60   -- 1 hour: refresh threshold
-local UA = 'XT Weather/1.5.6.2 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.3 (https://github.com/Valblasp/XT-Weather)'
 local asked_at = nil
 
 -- Storage helpers (ctx.storage, no kit available here)

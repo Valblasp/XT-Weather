@@ -1,8 +1,8 @@
 {
-  "version": "1.5.6.2",
-  "notes": "v1.5.6.2: bottom buttons no longer overlap the Details card; full Details (UV, humidity, pressure, sunrise/sunset, drawn moon) now also shown in landscape and on the lock screen.",
-  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.2/xtweather.xtapp",
+  "version": "1.5.6.3",
+  "notes": "v1.5.6.3: removed the full-width glass bar; only one small centered Menu button remains, freeing the bottom area for information.",
+  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.2/xtweatherland.xtapp",
+  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }
