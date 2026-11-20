@@ -1,6 +1,6 @@
 {
-  "version": "1.5.6",
-  "notes": "v1.5.6: fixed card layout/border inconsistencies, corrected details card positioning, adjusted spacing between Hourly/Daily/Details sections, added sunrise/sunset line in details card, resolved moon emoji encoding issues.",
+  "version": "1.5.6.1",
+  "notes": "v1.5.6.1: fixed Details card text overlap (row spacing now matches line height), replaced unsupported moon emoji with a drawn crescent.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweatherland.xtapp",
