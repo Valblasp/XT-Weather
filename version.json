@@ -1,6 +1,6 @@
 {
-  "version": "1.5.5",
-  "notes": "New design: iPhone-style layout with details card (UV, humidity, wind, pressure, sunrise, sunset, moon in center).",
+  "version": "1.5.6",
+  "notes": "v1.5.6: fixed card layout/border inconsistencies, corrected details card positioning, adjusted spacing between Hourly/Daily/Details sections, added sunrise/sunset line in details card, resolved moon emoji encoding issues.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/main/xtweatherland.xtapp",
