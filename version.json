@@ -1,8 +1,8 @@
 {
   "version": "1.5.6.1",
-  "notes": "v1.5.6.1: fixed Details card text overlap (row spacing now matches line height), replaced unsupported moon emoji with a drawn crescent.",
-  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1/xtweather.xtapp",
+  "notes": "v1.5.6.1-r2: fixed Details card text overlap (row spacing now matches line height), replaced unsupported moon emoji with a drawn crescent.",
+  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1-r2/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1/xtweatherland.xtapp",
+  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.1-r2/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }
