@@ -48,7 +48,7 @@ jobs:
           - Launch auto-refresh
           - Home button exit
         files: |
-          ../xteink-weather-app/xtweather.xtapp
-          ../xteink-weather-app/xtweatherland.xtapp
+          xtweather.xtapp
+          xtweatherland.xtapp
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
