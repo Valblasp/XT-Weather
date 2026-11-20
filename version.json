@@ -1,6 +1,6 @@
 {
-  "version": "1.5",
-  "notes": "New icon (cloud & rainbow), in-app lockscreen toggle with setup guidance, 1.5 release.",
+  "version": "1.5.1",
+  "notes": "Burn-in protection for lock screen: content shifts slightly over time to prevent e-ink ghosting.",
   "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweather.xtapp",
   "filename": "xtweather.xtapp",
   "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/xt-weather/xtweatherland.xtapp",

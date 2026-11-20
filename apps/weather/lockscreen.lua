@@ -210,7 +210,7 @@ end)()
 
 local W, H = 480, 800
 local STALE_S = 60 * 60   -- 1 hour: refresh threshold
-local UA = 'XT Weather/1.5 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.1 (https://github.com/Valblasp/XT-Weather)'
 local asked_at = nil
 
 -- Storage helpers (ctx.storage, no kit available here)
@@ -235,6 +235,15 @@ local function now_sec()
 end
 
 local function deg(v) return v and (tostring(v) .. '°') or '-' end
+
+-- Burn-in protection: tiny pseudo-random shift that changes every few minutes,
+-- so static content never sits on the exact same pixels for hours.
+local function burnin_offset()
+  local t = now_sec()
+  local ox = (math.floor(t / 300) % 5) - 2   -- -2..2, changes every 5 min
+  local oy = (math.floor(t / 480) % 5) - 2   -- -2..2, changes every 8 min
+  return ox, oy
+end
 
 -- Attempt a background weather refresh if data is stale
 local function try_refresh(fc)
@@ -269,6 +278,7 @@ end
 function on_draw(c, gg)
   local g = gg or c
   if not g then return end
+  local ox, oy = burnin_offset()
   local ok, err = pcall(function()
     if g.size then
       local ok_s, sw, sh = pcall(function() return g:size() end)
@@ -281,7 +291,7 @@ function on_draw(c, gg)
 
     local fc = X.parse_cache(read('forecast.txt'))
     if not fc then
-      g:text(24, 380, 'XT Weather: open the app once to set a city.', { font = font('medium') })
+      g:text(24 + ox, 380 + oy, 'XT Weather: open the app once to set a city.', { font = font('medium') })
       return
     end
 
@@ -291,56 +301,56 @@ function on_draw(c, gg)
 
     -- City name (bold effect: draw twice offset by 1px)
     local place_str = tostring(fc.place)
-    g:text(24, 24, place_str, { font = font('large') })
-    g:text(25, 24, place_str, { font = font('large') })
+    g:text(24 + ox, 24 + oy, place_str, { font = font('large') })
+    g:text(25 + ox, 24 + oy, place_str, { font = font('large') })
 
     -- Big temperature (seven-segment) + unit
     local temp = fc.now_t and tostring(fc.now_t) or '-'
-    local bx = X.big_number(g, temp, 24, 90, 150)
-    g:text(bx + 4, 86, '°' .. fc.unit, { font = font('large') })
+    local bx = X.big_number(g, temp, 24 + ox, 90 + oy, 150)
+    g:text(bx + 4, 86 + oy, '°' .. fc.unit, { font = font('large') })
 
     -- Weather icon (right side)
     local kind, text = X.kind(fc.now_code)
-    X.icon(g, kind, W - 190, 80, 170)
+    X.icon(g, kind, W - 190 + ox, 80 + oy, 170)
 
     -- Weather description
-    g:text(24, 262, text, { font = font('large') })
+    g:text(24 + ox, 262 + oy, text, { font = font('large') })
 
     -- Single metrics line: feels / humidity / wind
     local metrics = 'Feels ' .. deg(fc.now_feel) ..
                     '   Hum ' .. (fc.now_hum or '-') .. '%' ..
                     '   Wind ' .. (fc.now_wind or '-') .. ' km/h'
-    g:text(24, 300, metrics, { font = font('small') })
-    g:line(24, 334, W - 24, 334)
+    g:text(24 + ox, 300 + oy, metrics, { font = font('small') })
+    g:line(24 + ox, 334 + oy, W - 24 + ox, 334 + oy)
 
     -- Today summary
     local d1 = fc.days[1]
     if d1 then
-      g:text(24, 354,
+      g:text(24 + ox, 354 + oy,
         'Today ' .. deg(d1.lo) .. ' / ' .. deg(d1.hi) ..
         '   rain ' .. (d1.rain or 0) .. '%',
         { font = font('medium') })
     end
-    g:line(24, 388, W - 24, 388)
+    g:line(24 + ox, 388 + oy, W - 24 + ox, 388 + oy)
 
     -- Next 3 days
     for k = 2, math.min(4, #fc.days) do
       local d = fc.days[k]
-      local ry = 408 + (k - 2) * 100
-      g:text(24, ry + 28, X.weekday(d.date), { font = font('large') })
-      X.icon(g, (X.kind(d.code)), 150, ry, 80)
-      g:text(260, ry + 28, deg(d.lo) .. ' / ' .. deg(d.hi), { font = font('large') })
-      g:text(260, ry + 60, 'rain ' .. (d.rain or 0) .. '%', { font = font('small') })
+      local ry = 408 + (k - 2) * 100 + oy
+      g:text(24 + ox, ry + 28, X.weekday(d.date), { font = font('large') })
+      X.icon(g, (X.kind(d.code)), 150 + ox, ry, 80)
+      g:text(260 + ox, ry + 28, deg(d.lo) .. ' / ' .. deg(d.hi), { font = font('large') })
+      g:text(260 + ox, ry + 60, 'rain ' .. (d.rain or 0) .. '%', { font = font('small') })
     end
 
     -- Footer: data age
     local mins = age // 60
     local age_str = mins < 90 and ('updated ' .. mins .. ' min ago') or ('updated ' .. (mins // 60) .. ' h ago')
-    g:text(24, H - 36, age_str, { font = font('small') })
+    g:text(24 + ox, H - 36 + oy, age_str, { font = font('small') })
   end)
   if not ok then
     pcall(function()
-      g:text(10, H - 40, 'lock err: ' .. tostring(err):sub(1, 60), { font = font('small') })
+      g:text(10 + ox, H - 40 + oy, 'lock err: ' .. tostring(err):sub(1, 60), { font = font('small') })
     end)
   end
 end

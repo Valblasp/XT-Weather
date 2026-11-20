@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Xteink%20X4%20Pro-black?style=flat-square)](https://xteink.com)
 [![Firmware](https://img.shields.io/badge/OS-XTOS%20Licorice-orange?style=flat-square)](https://github.com/Valblasp/XT-Weather)
 [![Screen](https://img.shields.io/badge/Display-4.3%22%20E--Ink%20(480x800)-lightgrey?style=flat-square)](https://github.com/Valblasp/XT-Weather)
-[![Version](https://img.shields.io/badge/Version-v1.5-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
+[![Version](https://img.shields.io/badge/Version-v1.5.1-green?style=flat-square)](https://github.com/Valblasp/XT-Weather/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 A clean, native weather forecast application for the **Xteink X4 Pro** e-reader running the official **XTOS Licorice** firmware.
