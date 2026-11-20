@@ -14,6 +14,17 @@ Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surf
 
 ---
 
+## 🌈 What's New in v1.5.5
+
+### 📱 iPhone-Style E-Ink Design
+
+- **Cleaner layout**: city + updated time header, big temperature, centered condition label, inlined metrics (feels/humidity/wind).
+- **Compact hourly strip**: 6 hours justified across the width, no overlap.
+- **5-Day Outlook**: compact rows with day, icon, lo/hi and right-aligned rain %.
+- **Details card**: UV, humidity, wind, pressure, sunrise, sunset — with a **large moon glyph in the center** and info columns on each side.
+
+---
+
 ## 🌈 What's New in v1.5
 
 ### ☀️ Brand New App Icon: Bold Sun
@@ -101,11 +112,13 @@ Redesigned in **v1.4.1+** around the **Liquid Glass** design: frosted glass surf
 
 | Version | Highlights |
 |---|---|
-| **v1.4.1.1** | Opaque modal sheets (no e-ink bleed-through), heritage & attribution documentation |
-| v1.4.3 | More distinct Liquid Glass look: larger temperature, glass panels, clearer layout |
-
-| Version | Highlights |
-|---|---|
+| **v1.5.5** | iPhone-style e-ink design: details card with moon in center, compacted hourly/10-day |
+| **v1.5.4** | Robust update check via GitHub API; redirect-following download; auto-apply |
+| **v1.5.3** | Auto-apply update: writes new code to app folder; restart to apply |
+| **v1.5.2** | Menu button; burn-in protection for lock screen |
+| **v1.5.1** | Burn-in protection for lock screen (content shifts over time) |
+| **v1.5** | New bold sun icon; in-app lock screen toggle; hourly lockscreen refresh |
+| **v1.4.6** | Opaque modal sheets (no e-ink bleed-through) |
 | **v1.4.3** | More distinct Liquid Glass look: larger temperature, glass panels, clearer layout |
 | **v1.4.2** | Menu button; download-only updates with prompt; auto update check after refresh |
 | v1.4.1 | Liquid Glass redesign + new icon; fresh implementation |
