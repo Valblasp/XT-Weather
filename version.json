@@ -1,8 +1,8 @@
 {
-  "version": "1.5.1",
-  "notes": "Burn-in protection for lock screen: content shifts slightly over time to prevent e-ink ghosting.",
-  "download_url": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.1/xtweather.xtapp",
+  "version": "1.5.2",
+  "notes": "Update check now uses GitHub API (immune to CDN cache staleness).",
+  "download_url": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.2/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.1/xtweatherland.xtapp",
+  "download_url_land": "https://github.com/Valblasp/XT-Weather/releases/download/v1.5.2/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }
