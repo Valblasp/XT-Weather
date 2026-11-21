@@ -7,9 +7,9 @@
 
 local X = require('wx')
 local STALE_S = 60 * 60
-local UA = 'XT Weather/1.5.6.3 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.4 (https://github.com/Valblasp/XT-Weather)'
 
-local APP_VERSION = '1.5.6.3'
+local APP_VERSION = '1.5.6.4'
 local UPDATE_URL = 'https://api.github.com/repos/Valblasp/XT-Weather/contents/version.json?ref=main'
 local update_info = nil
 
@@ -213,7 +213,7 @@ download_update = function()
       -- Fetch index.lua and write it too (best-effort auto-update of code)
       status = 'Applying update...'
       kit.refresh()
-      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
+      get('https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.4/apps/weather/index.lua', 'Applying update...', function(d2, err2, idx_body)
         local auto_ok = false
         if idx_body and #idx_body > 1000 then
           local okw2 = pcall(function()
@@ -448,34 +448,35 @@ local function draw_main_portrait(gg)
     if k < 5 then gg:line(16, y + 31, W - 16, y + 31, { line_width = 1 }) end
   end
 
-  -- Details card (532..682): status line sits at 692, buttons start at 722.
+  -- Details card: the columns spread into the space beside the centered button.
   local d1 = fc.days[1] or {}
   local uv = fc.now_uv
   local sr = (d1.sunrise or ''):match('T(%d%d:%d%d)') or (d1.sunrise or '')
   local ss = (d1.sunset or ''):match('T(%d%d:%d%d)') or (d1.sunset or '')
-  local dy = 532
+  local dy = 526
   gg:line(0, dy, W, dy, { line_width = 1 })
   gg:text(math.floor((W - kit.width(kit.font('small'), 'Details')) / 2), dy + 4, 'Details', { font = kit.font('small') })
-  local ly = dy + 28
-  -- label/value pairs: 18px apart, rows 40px apart
-  gg:text(16, ly, 'UV', { font = kit.font('small') })
-  gg:text(16, ly + 18, uv and tostring(uv) or '-', { font = kit.font('medium') })
-  gg:text(16, ly + 40, 'Humidity', { font = kit.font('small') })
-  gg:text(16, ly + 58, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
-  gg:text(16, ly + 80, 'Sunrise', { font = kit.font('small') })
-  gg:text(16, ly + 98, sr ~= '' and sr or '-', { font = kit.font('medium') })
+  local ly = dy + 30
+  -- label/value pairs: 22px apart, rows 56px apart, 24px inset from each edge.
+  local lx = 24
+  gg:text(lx, ly, 'UV', { font = kit.font('small') })
+  gg:text(lx, ly + 22, uv and tostring(uv) or '-', { font = kit.font('medium') })
+  gg:text(lx, ly + 56, 'Humidity', { font = kit.font('small') })
+  gg:text(lx, ly + 78, (fc.now_hum or '-') .. '%', { font = kit.font('medium') })
+  gg:text(lx, ly + 112, 'Sunrise', { font = kit.font('small') })
+  gg:text(lx, ly + 134, sr ~= '' and sr or '-', { font = kit.font('medium') })
   -- drawn crescent moon (device font has no moon codepoint)
-  X.moon(gg, math.floor(W / 2), ly + 42, 24)
-  gg:text(math.floor((W - kit.width(kit.font('small'), 'New Moon')) / 2), ly + 70, 'New Moon', { font = kit.font('small') })
-  local rx = W - 16
+  X.moon(gg, math.floor(W / 2), ly + 50, 26)
+  gg:text(math.floor((W - kit.width(kit.font('small'), 'New Moon')) / 2), ly + 82, 'New Moon', { font = kit.font('small') })
+  local rx = W - 24
   local function rlabel(txt, y) gg:text(rx - kit.width(kit.font('small'), txt), y, txt, { font = kit.font('small') }) end
   local function rvalue(txt, y) gg:text(rx - kit.width(kit.font('medium'), txt), y, txt, { font = kit.font('medium') }) end
   rlabel('Wind', ly)
-  rvalue((fc.now_wind or '-') .. ' km/h', ly + 18)
-  rlabel('Pressure', ly + 40)
-  rvalue('1013 hPa', ly + 58)
-  rlabel('Sunset', ly + 80)
-  rvalue(ss ~= '' and ss or '-', ly + 98)
+  rvalue((fc.now_wind or '-') .. ' km/h', ly + 22)
+  rlabel('Pressure', ly + 56)
+  rvalue('1013 hPa', ly + 78)
+  rlabel('Sunset', ly + 112)
+  rvalue(ss ~= '' and ss or '-', ly + 134)
 end
 
 local function draw_main_landscape(gg)
@@ -613,8 +614,13 @@ function on_draw(c, gg)
     if screen == 'places' then draw_places(gg) else draw_main(gg) end
     local line = busy_label or status or ERR
     if line then
-      local ly = L.bar_y - (L.is_land and 24 or 30)
-      gg:text(12, ly, kit.short(tostring(line), L.is_land and 80 or 48), { font = kit.font('small') })
+      local s = kit.short(tostring(line), L.is_land and 80 or 26)
+      if L.is_land then
+        gg:text(12, L.bar_y - 24, s, { font = kit.font('small') })
+      else
+        -- Centered above the small button: the side columns stay clear.
+        gg:text(math.floor((L.w - kit.width(kit.font('small'), s)) / 2), L.bar_y - 22, s, { font = kit.font('small') })
+      end
     end
     local bs = buttons()
     for k, b in ipairs(bs) do

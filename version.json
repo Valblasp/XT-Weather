@@ -1,8 +1,8 @@
 {
-  "version": "1.5.6.3",
-  "notes": "v1.5.6.3: removed the full-width glass bar; only one small centered Menu button remains, freeing the bottom area for information.",
-  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/xtweather.xtapp",
+  "version": "1.5.6.4",
+  "notes": "v1.5.6.4: more breathing room between the left and right Details rows, using the space beside the centered Menu button; status line moved to the center.",
+  "download_url": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.4/xtweather.xtapp",
   "filename": "xtweather.xtapp",
-  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.3/xtweatherland.xtapp",
+  "download_url_land": "https://raw.githubusercontent.com/Valblasp/XT-Weather/v1.5.6.4/xtweatherland.xtapp",
   "filename_land": "xtweatherland.xtapp"
 }

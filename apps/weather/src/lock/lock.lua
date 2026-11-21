@@ -6,7 +6,7 @@
 
 local W, H = 480, 800
 local STALE_S = 60 * 60   -- 1 hour: refresh threshold
-local UA = 'XT Weather/1.5.6.3 (https://github.com/Valblasp/XT-Weather)'
+local UA = 'XT Weather/1.5.6.4 (https://github.com/Valblasp/XT-Weather)'
 local asked_at = nil
 
 -- Storage helpers (ctx.storage, no kit available here)
@@ -135,21 +135,22 @@ function on_draw(c, gg)
       g:line(24 + ox, 492 + oy, W - 24 + ox, 492 + oy)
       g:text(24 + ox, 496 + oy, 'Details', { font = font('small') })
       local ly = 520 + oy
+      -- Roomier label/value pairs: 22px apart, rows 50px apart.
       g:text(24 + ox, ly, 'UV', { font = font('small') })
-      g:text(24 + ox, ly + 18, uv and tostring(uv) or '-', { font = font('medium') })
-      g:text(24 + ox, ly + 40, 'Humidity', { font = font('small') })
-      g:text(24 + ox, ly + 58, (fc.now_hum or '-') .. '%', { font = font('medium') })
-      g:text(24 + ox, ly + 80, 'Sunrise', { font = font('small') })
-      g:text(24 + ox, ly + 98, sr ~= '' and sr or '-', { font = font('medium') })
+      g:text(24 + ox, ly + 22, uv and tostring(uv) or '-', { font = font('medium') })
+      g:text(24 + ox, ly + 50, 'Humidity', { font = font('small') })
+      g:text(24 + ox, ly + 72, (fc.now_hum or '-') .. '%', { font = font('medium') })
+      g:text(24 + ox, ly + 100, 'Sunrise', { font = font('small') })
+      g:text(24 + ox, ly + 122, sr ~= '' and sr or '-', { font = font('medium') })
       local rx = 250 + ox
       g:text(rx, ly, 'Wind', { font = font('small') })
-      g:text(rx, ly + 18, (fc.now_wind or '-') .. ' km/h', { font = font('medium') })
-      g:text(rx, ly + 40, 'Pressure', { font = font('small') })
-      g:text(rx, ly + 58, '1013 hPa', { font = font('medium') })
-      g:text(rx, ly + 80, 'Sunset', { font = font('small') })
-      g:text(rx, ly + 98, ss ~= '' and ss or '-', { font = font('medium') })
-      X.moon(g, W - 70 + ox, ly + 44, 26)
-      g:text(W - 130 + ox, ly + 80, 'New Moon', { font = font('small') })
+      g:text(rx, ly + 22, (fc.now_wind or '-') .. ' km/h', { font = font('medium') })
+      g:text(rx, ly + 50, 'Pressure', { font = font('small') })
+      g:text(rx, ly + 72, '1013 hPa', { font = font('medium') })
+      g:text(rx, ly + 100, 'Sunset', { font = font('small') })
+      g:text(rx, ly + 122, ss ~= '' and ss or '-', { font = font('medium') })
+      X.moon(g, W - 70 + ox, ly + 52, 26)
+      g:text(W - 130 + ox, ly + 100, 'New Moon', { font = font('small') })
       g:text(24 + ox, H - 30 + oy, age_str, { font = font('small') })
     else
       -- Landscape: current at top-left, 4-day rows, compact Details strip.
@@ -183,8 +184,8 @@ function on_draw(c, gg)
                     '     Pressure 1013 hPa' ..
                     '     Sunset ' .. (ss ~= '' and ss or '-')
       g:text(24 + ox, dy + 26, line1, { font = font('small') })
-      g:text(24 + ox, dy + 48, line2, { font = font('small') })
-      X.moon(g, W - 50 + ox, dy + 38, 14)
+      g:text(24 + ox, dy + 54, line2, { font = font('small') })
+      X.moon(g, W - 50 + ox, dy + 40, 14)
       g:text(24 + ox, H - 22 + oy, age_str, { font = font('small') })
     end
   end)
